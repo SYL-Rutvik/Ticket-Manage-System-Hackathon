@@ -26,7 +26,7 @@ const TicketQueue = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-10">
       <div className="page-header">
         <h1 className="page-title">Global Ticket Queue</h1>
-        <p className="page-sub">Triage and assign customer requests</p>
+        <p className="page-sub">Triage and assign employee requests</p>
       </div>
 
       {/* Filters */}
@@ -98,13 +98,13 @@ const TicketQueue = () => {
                     <td className="py-4 px-4 font-mono text-gray-500 text-xs">#{t.id}</td>
                     <td className="py-4 px-4">
                       <div className="font-semibold text-gray-200 truncate max-w-[280px] group-hover:text-primary-light transition-colors">{t.title}</div>
-                      <div className="text-[11px] text-gray-500 mt-1 uppercase tracking-wider">Customer: {t.createdBy}</div>
+                      <div className="text-[11px] text-gray-500 mt-1 uppercase tracking-wider">Employee: {typeof t.createdBy === 'object' ? t.createdBy?.name : t.createdBy}</div>
                     </td>
                     <td className="py-4 px-4"><span className="capitalize text-[11px] font-bold tracking-wider px-2 py-1 rounded bg-surface border border-border text-gray-300 shadow-sm">{t.status}</span></td>
                     <td className="py-4 px-4"><span className="capitalize text-[11px] font-bold tracking-wider px-2 py-1 rounded bg-surface border border-border text-gray-300 shadow-sm">{t.priority}</span></td>
                     <td className="py-4 px-4">
                       {t.assignedTo ? (
-                        <span className="text-gray-400 text-[13px] font-medium flex items-center gap-1.5"><LayoutList size={14}/> Agent #{t.assignedTo}</span>
+                        <span className="text-gray-400 text-[13px] font-medium flex items-center gap-1.5"><LayoutList size={14}/> {typeof t.assignedTo === 'object' ? t.assignedTo?.name : t.assignedTo}</span>
                       ) : (
                         <span className="text-amber-500 text-[10px] font-bold uppercase tracking-widest bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20 shadow-sm">Unassigned</span>
                       )}

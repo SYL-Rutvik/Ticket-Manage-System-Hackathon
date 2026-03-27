@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import { Ticket, PlusCircle, Inbox, Users as UsersIcon, LayoutDashboard, UserCog, Clock, LogOut } from 'lucide-react';
 
 const navConfig = {
-  customer: [
-    { label: 'My Tickets',    path: '/customer/tickets',        icon: Ticket },
-    { label: 'New Ticket',    path: '/customer/tickets/create', icon: PlusCircle },
+  employee: [
+    { label: 'My Tickets',    path: '/employee/tickets',        icon: Ticket },
+    { label: 'New Ticket',    path: '/employee/tickets/create', icon: PlusCircle },
   ],
   agent: [
     { label: 'Ticket Queue', path: '/agent/queue',    icon: Inbox },
@@ -19,8 +19,8 @@ const navConfig = {
   ],
 };
 
-const roleColor = { customer: 'bg-blue-500', agent: 'bg-amber-500', admin: 'bg-indigo-500' };
-const roleBg    = { customer: 'from-blue-600/10 hover:from-blue-600/20',  agent: 'from-amber-600/10 hover:from-amber-600/20',  admin: 'from-indigo-600/10 hover:from-indigo-600/20' };
+const roleColor = { employee: 'bg-blue-500', agent: 'bg-amber-500', admin: 'bg-indigo-500' };
+const roleBg    = { employee: 'from-blue-600/10 hover:from-blue-600/20',  agent: 'from-amber-600/10 hover:from-amber-600/20',  admin: 'from-indigo-600/10 hover:from-indigo-600/20' };
 
 const Sidebar = () => {
   const { user, signOut } = useAuth();

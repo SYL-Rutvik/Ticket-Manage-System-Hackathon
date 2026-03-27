@@ -3,6 +3,8 @@ import { ROLE_HOME } from '@/shared/utils/constants';
 
 const AuthContext = createContext(null);
 
+const normalizeRole = (role) => (role === 'customer' ? 'employee' : role);
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser]   = useState(null);
   const [token, setToken] = useState(null);
@@ -11,14 +13,26 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const t = localStorage.getItem('token');
     const u = localStorage.getItem('user');
-    if (t && u) { setToken(t); setUser(JSON.parse(u)); }
+    if (t && u) {
+      try {
+        const parsedUser = JSON.parse(u);
+        const normalizedUser = { ...parsedUser, role: normalizeRole(parsedUser?.role) };
+        setToken(t);
+        setUser(normalizedUser);
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+      } catch {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
     setLoading(false);
   }, []);
 
   const signIn = ({ token: t, user: u }) => {
+    const normalizedUser = { ...u, role: normalizeRole(u?.role) };
     localStorage.setItem('token', t);
-    localStorage.setItem('user', JSON.stringify(u));
-    setToken(t); setUser(u);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
+    setToken(t); setUser(normalizedUser);
   };
 
   const signOut = () => {

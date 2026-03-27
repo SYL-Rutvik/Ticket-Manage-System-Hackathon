@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Hash, Clock } from 'lucide-react';
+import { Hash, Clock, Eye, AlertCircle } from 'lucide-react';
 import { StatusBadge, PriorityBadge } from '../shared/Badge';
 import SLABadge from './SLABadge';
 import { timeAgo } from '@/shared/utils/formatDate';
 
 const TicketCard = ({ ticket, role }) => {
-  const detailPath = role === 'customer' ? `/customer/tickets/${ticket.id}` : `/agent/tickets/${ticket.id}`;
+  const detailPath = role === 'employee' ? `/employee/tickets/${ticket.id}` : `/agent/tickets/${ticket.id}`;
 
   return (
     <motion.div 
@@ -25,9 +25,14 @@ const TicketCard = ({ ticket, role }) => {
                 <Hash size={12} className="opacity-70" /> {ticket.id}
               </span>
               <StatusBadge status={ticket.status} />
-              <span className="flex items-center gap-1 text-gray-500 text-xs font-medium">
+              <span className="flex items-center gap-1 text-gray-500 text-xs font-medium border-l border-border pl-3">
                 <Clock size={12} /> {timeAgo(ticket.createdAt)}
               </span>
+              {role === 'employee' && (
+                <span className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${ticket.assignedTo ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                  {ticket.assignedTo ? <><Eye size={12} /> Agent Assigned</> : <><AlertCircle size={12} /> Awaiting Review</>}
+                </span>
+              )}
             </div>
             
             <h3 className="text-lg font-bold text-gray-100 mb-1.5 truncate group-hover:text-primary-light transition-colors">
@@ -40,8 +45,8 @@ const TicketCard = ({ ticket, role }) => {
 
           {/* Right Side */}
           <div className="flex flex-col items-end gap-2 shrink-0 pt-1">
-            <PriorityBadge priority={ticket.priority} />
-            {role !== 'customer' && <SLABadge dueAt={ticket.sla_due_at} status={ticket.status} />}
+            {role !== 'employee' && <PriorityBadge priority={ticket.priority} />}
+            <SLABadge dueAt={ticket.sla_due_at} status={ticket.status} />
           </div>
         
         </div>

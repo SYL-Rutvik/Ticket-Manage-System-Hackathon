@@ -30,6 +30,8 @@ export const useTicketController = () => {
 
   const create = useCallback(async (data) => {
     const d = await ticketSvc.createTicket(data);
+    // Immediately add to tickets list so it appears without refresh
+    setTickets(prev => [d, ...prev]);
     return d;
   }, []);
 

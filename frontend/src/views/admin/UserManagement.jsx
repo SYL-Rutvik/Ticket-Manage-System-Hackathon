@@ -66,7 +66,7 @@ const UserManagement = () => {
                             value={u.role}
                             onChange={e => changeRole(u.id, e.target.value)}
                           >
-                            <option value="customer">Customer</option>
+                            <option value="employee">Employee</option>
                             <option value="agent">Agent</option>
                             <option value="admin">Admin</option>
                           </select>

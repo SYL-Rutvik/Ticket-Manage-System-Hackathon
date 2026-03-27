@@ -1,6 +1,6 @@
 export const API_URL = 'http://localhost:5000/api';
 
-export const ROLES = { CUSTOMER: 'customer', AGENT: 'agent', ADMIN: 'admin' };
+export const ROLES = { EMPLOYEE: 'employee', AGENT: 'agent', ADMIN: 'admin' };
 
 export const STATUS = {
   OPEN:        'open',
@@ -20,7 +20,8 @@ export const CATEGORY = ['bug', 'feature', 'task', 'support'];
 
 // Role default redirect after login
 export const ROLE_HOME = {
-  customer: '/customer/tickets',
+  employee: '/employee/tickets',
+  customer: '/employee/tickets',
   agent:    '/agent/queue',
   admin:    '/admin/dashboard',
 };

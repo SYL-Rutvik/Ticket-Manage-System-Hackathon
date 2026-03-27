@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, X, AlertCircle } from 'lucide-react';
+import { Send, X, AlertCircle, Timer } from 'lucide-react';
 import { useTicketController } from '@/hooks/shared/useTickets';
 import { CATEGORY, PRIORITY } from '@/shared/utils/constants';
 
@@ -13,7 +13,7 @@ const CreateTicket = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newTicket = await create(form);
-    if (newTicket) navigate(`/customer/tickets/${newTicket.id}`);
+    if (newTicket) navigate(`/employee/tickets/${newTicket.id}`);
   };
 
   return (
@@ -54,8 +54,14 @@ const CreateTicket = () => {
               </select>
             </div>
             <div>
-              <label className="form-label text-xs tracking-widest text-gray-500 mb-2">Priority</label>
-              <select className="form-select text-base py-2.5" value={form.priority} onChange={e => setForm({...form, priority: e.target.value})}>
+              <div className="flex justify-between items-end mb-2">
+                 <label className="form-label text-xs tracking-widest text-gray-500 mb-0">Priority</label>
+                 {form.priority === PRIORITY.CRITICAL && <span className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20"><Timer size={10}/> ~4h SLA</span>}
+                 {form.priority === PRIORITY.HIGH && <span className="text-[10px] font-bold text-orange-500 uppercase flex items-center gap-1 bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20"><Timer size={10}/> ~24h SLA</span>}
+                 {form.priority === PRIORITY.MEDIUM && <span className="text-[10px] font-bold text-amber-500 uppercase flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20"><Timer size={10}/> ~48h SLA</span>}
+                 {form.priority === PRIORITY.LOW && <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1 bg-gray-500/10 px-1.5 py-0.5 rounded border border-gray-500/20"><Timer size={10}/> ~72h SLA</span>}
+              </div>
+              <select className="form-select text-base py-2.5 w-full" value={form.priority} onChange={e => setForm({...form, priority: e.target.value})}>
                 {Object.values(PRIORITY).map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>

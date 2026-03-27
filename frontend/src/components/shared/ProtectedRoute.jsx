@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children, roles }) => {
   );
 
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to={ROLE_HOME[user.role]} replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to={ROLE_HOME[user.role] ?? '/login'} replace />;
   return children;
 };
 

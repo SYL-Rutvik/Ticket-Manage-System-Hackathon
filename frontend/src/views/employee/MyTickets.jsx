@@ -26,7 +26,7 @@ const MyTickets = () => {
           <p className="text-sm text-gray-400 mt-1">Track and manage your requests</p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Link to="/customer/tickets/create" className="btn btn-primary shadow-lg shadow-primary/20">
+          <Link to="/employee/tickets/create" className="btn btn-primary shadow-lg shadow-primary/20">
             <PlusCircle size={18} /> New Ticket
           </Link>
         </motion.div>
@@ -53,7 +53,7 @@ const MyTickets = () => {
               show: { opacity: 1, transition: { staggerChildren: 0.05 } }
             }}
           >
-            {tickets.map(t => <TicketCard key={t.id} ticket={t} role="customer" />)}
+            {tickets.map(t => <TicketCard key={t.id} ticket={t} role="employee" />)}
           </motion.div>
         )}
       </AnimatePresence>

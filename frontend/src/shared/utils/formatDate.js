@@ -28,3 +28,13 @@ export const slaRemaining = (sla_due_at) => {
   const mins  = Math.floor((diff % 3600000) / 60000);
   return { label: hours > 0 ? `${hours}h ${mins}m` : `${mins}m`, breached: false };
 };
+
+export const formatTimeRemaining = (iso) => {
+  if (!iso) return '0m';
+  const diff = new Date(iso).getTime() - Date.now();
+  const absMinutes = Math.floor(Math.abs(diff) / 60000);
+  const hours = Math.floor(absMinutes / 60);
+  const minutes = absMinutes % 60;
+
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+};

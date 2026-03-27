@@ -61,7 +61,7 @@ const TicketDetail = () => {
                 <h1 className="text-2xl font-extrabold text-gray-100 mb-4 tracking-tight">{ticket.title}</h1>
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium text-gray-400">
                   <span className="flex items-center gap-1.5">
-                    <User size={14} className="text-gray-500" /> Created by: <span className="text-gray-200">User #{ticket.createdBy}</span>
+                    <User size={14} className="text-gray-500" /> Created by: <span className="text-gray-200">{typeof ticket.createdBy === 'object' ? ticket.createdBy?.name : ticket.createdBy}</span>
                   </span>
                   <span className="flex items-center gap-1.5">
                     <Clock size={14} className="text-gray-500" /> {formatDateTime(ticket.createdAt)}
@@ -129,7 +129,7 @@ const TicketDetail = () => {
                 {ticket.assignedTo ? (
                   <div className="flex items-center justify-between bg-elevated/50 p-2.5 rounded-xl border border-border">
                     <span className="text-sm font-bold text-gray-200 flex items-center gap-2">
-                       <User size={16} className="text-gray-500"/> Agent #{ticket.assignedTo}
+                       <User size={16} className="text-gray-500"/> {typeof ticket.assignedTo === 'object' ? ticket.assignedTo?.name : ticket.assignedTo}
                     </span>
                     {ticket.assignedTo !== user.id && user.role === 'admin' && (
                       <button onClick={() => assign(ticket.id, user.id)} className="text-[11px] font-bold tracking-widest text-primary hover:text-primary-light uppercase">Reassign</button>

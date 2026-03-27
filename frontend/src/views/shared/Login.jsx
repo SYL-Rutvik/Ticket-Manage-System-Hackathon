@@ -25,7 +25,7 @@ const Login = () => {
   const seedUsers = [
     { email: 'admin@example.com', role: 'admin', icon: ShieldCheck },
     { email: 'agent@example.com', role: 'agent', icon: Sparkles },
-    { email: 'customer@example.com', role: 'customer', icon: User },
+    { email: 'employee@example.com', role: 'employee', icon: User },
   ];
 
   return (

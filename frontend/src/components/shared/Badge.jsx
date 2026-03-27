@@ -15,7 +15,7 @@ const PRIORITY_CLASSES = {
 const ROLE_CLASSES = {
   admin:    'bg-purple-500/15 text-purple-400 border border-purple-500/30',
   agent:    'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-  customer: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+  employee: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
 };
 
 const STATUS_DOT = {

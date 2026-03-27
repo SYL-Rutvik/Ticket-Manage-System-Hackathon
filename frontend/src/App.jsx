@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from '@/shared/context/AuthContext';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import Sidebar from '@/components/shared/Sidebar';
@@ -17,10 +17,10 @@ const PageSkeleton = () => (
 const Login = lazy(() => import('@/views/shared/Login'));
 const Register = lazy(() => import('@/views/shared/Register'));
 
-// Customer
-const MyTickets = lazy(() => import('@/views/customer/MyTickets'));
-const CreateTicket = lazy(() => import('@/views/customer/CreateTicket'));
-const TicketDetailCustomer = lazy(() => import('@/views/customer/TicketDetail'));
+// Employee
+const MyTickets = lazy(() => import('@/views/employee/MyTickets'));
+const CreateTicket = lazy(() => import('@/views/employee/CreateTicket'));
+const TicketDetailEmployee = lazy(() => import('@/views/employee/TicketDetail'));
 
 // Agent
 const TicketQueue = lazy(() => import('@/views/agent/TicketQueue'));
@@ -33,13 +33,13 @@ const UserManagement = lazy(() => import('@/views/admin/UserManagement'));
 const SLAConfig = lazy(() => import('@/views/admin/SLAConfig'));
 
 // Layout wrapper
-const AppLayout = ({ children }) => (
+const AppLayout = () => (
   <div className="app-layout">
     <Sidebar />
     <main className="main-content">
       <div className="max-w-6xl mx-auto w-full">
         <Suspense fallback={<PageSkeleton />}>
-          {children}
+          <Outlet />
         </Suspense>
       </div>
     </main>
@@ -64,22 +64,22 @@ function App() {
           } />
           <Route path="/" element={<Navigate to="/login" replace />} />
 
-          {/* Customer Routes */}
-          <Route path="/customer/*" element={<ProtectedRoute roles={['customer']}><AppLayout /></ProtectedRoute>}>
+          {/* Employee Routes */}
+          <Route path="/employee" element={<ProtectedRoute roles={['employee']}><AppLayout /></ProtectedRoute>}>
             <Route path="tickets" element={<MyTickets />} />
             <Route path="tickets/create" element={<CreateTicket />} />
-            <Route path="tickets/:id" element={<TicketDetailCustomer />} />
+            <Route path="tickets/:id" element={<TicketDetailEmployee />} />
           </Route>
 
           {/* Agent Routes */}
-          <Route path="/agent/*" element={<ProtectedRoute roles={['agent', 'admin']}><AppLayout /></ProtectedRoute>}>
+          <Route path="/agent" element={<ProtectedRoute roles={['agent', 'admin']}><AppLayout /></ProtectedRoute>}>
             <Route path="queue" element={<TicketQueue />} />
             <Route path="assigned" element={<MyAssigned />} />
             <Route path="tickets/:id" element={<TicketDetailAgent />} />
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin/*" element={<ProtectedRoute roles={['admin']}><AppLayout /></ProtectedRoute>}>
+          <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AppLayout /></ProtectedRoute>}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="sla" element={<SLAConfig />} />

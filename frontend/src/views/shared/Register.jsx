@@ -43,7 +43,7 @@ const Register = () => {
           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400 mb-2 tracking-tight">
             Join TicketFlow
           </h1>
-          <p className="text-gray-400 text-sm font-medium">Create a customer account to get started.</p>
+          <p className="text-gray-400 text-sm font-medium">Create an employee account to get started.</p>
         </div>
 
         {/* Form Card */}

@@ -11,8 +11,8 @@ const InternalNotes = ({ ticketId }) => {
   const [newText, setNewText] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Hidden from customers completely
-  if (user?.role === 'customer') return null;
+  // Hidden from employees completely
+  if (user?.role === 'employee') return null;
 
   useEffect(() => {
     let mounted = true;
