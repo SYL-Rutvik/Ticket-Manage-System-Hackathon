@@ -7,7 +7,7 @@ const ctrl = require("../controllers/ticketController");
 router.get("/stats", auth, requireRole("admin"), ctrl.getStats);
 
 // Customer — own tickets
-router.get("/mine", auth, requireRole("customer"), ctrl.getMine);
+router.get("/mine", auth, requireRole("employee"), ctrl.getMine);
 
 // Agent/Admin — all tickets
 router.get("/", auth, requireRole("agent"), ctrl.getAll);
@@ -16,7 +16,7 @@ router.get("/", auth, requireRole("agent"), ctrl.getAll);
 router.get("/:id", auth, ctrl.getById);
 
 // Customer — create
-router.post("/", auth, requireRole("customer"), ctrl.create);
+router.post("/", auth, requireRole("employee"), ctrl.create);
 
 // Agent/Admin — claim / assign
 router.patch("/:id/assign", auth, requireRole("agent"), ctrl.assign);

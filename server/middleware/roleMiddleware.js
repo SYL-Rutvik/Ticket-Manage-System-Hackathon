@@ -1,5 +1,5 @@
-// Role hierarchy: admin > agent > customer
-const ROLE_LEVELS = { customer: 1, agent: 2, admin: 3 };
+// Role hierarchy: admin > agent > employee
+const ROLE_LEVELS = { employee: 1, agent: 2, admin: 3 };
 
 /**
  * requireRole('agent') — allows agent AND admin
