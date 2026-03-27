@@ -47,19 +47,20 @@ const createUser = async (req, res) => {
     let rawPassword = '';
     for (let i = 0; i < 8; i++) rawPassword += chars.charAt(Math.floor(Math.random() * chars.length));
 
-    const user = new User({ 
-      name, 
-      email: email.toLowerCase(), 
-      passwordHash: rawPassword, 
+    const user = new User({
+      name,
+      email: email.toLowerCase(),
+      passwordHash: rawPassword,
       role: userRole,
       location: location || {}
     });
     await user.save(); // automatically hashed by pre-save hook
 
-    // Dispatch email
-    await sendCredentials(user.email, user.name, rawPassword);
+    // Dispatch email (non-blocking to prevent UI timeout)
+    sendCredentials(user.email, user.name, rawPassword).catch(err => console.error("Background email failed for: ", user.email, err));
 
     res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role, location: user.location });
+
   } catch (err) { res.status(500).json({ error: err.message }) }
 };
 

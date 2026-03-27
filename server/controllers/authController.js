@@ -5,7 +5,7 @@ const { JWT_SECRET } = require("../middleware/authMiddleware");
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, location } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: "name, email and password are required" });
 
     // lowercase check email
@@ -14,12 +14,20 @@ const register = async (req, res) => {
 
     const VALID_ROLES = ["employee", "agent", "admin"];
     const userRole = VALID_ROLES.includes(role) ? role : "employee";
-    
-    const user = new User({ name, email: email.toLowerCase(), passwordHash: password, role: userRole });
+
+    const user = new User({
+      name,
+      email: email.toLowerCase(),
+      passwordHash: password,
+      role: userRole,
+      location: location || { city: "Surat", state: "Gujarat", area: "" }
+    });
+
     await user.save();
 
-    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role, location: user.location }, JWT_SECRET, { expiresIn: "7d" });
+    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, location: user.location } });
+
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
@@ -34,8 +42,9 @@ const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role, location: user.location }, JWT_SECRET, { expiresIn: "7d" });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, location: user.location } });
+
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 

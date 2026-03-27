@@ -26,7 +26,13 @@ const ticketSchema = new mongoose.Schema({
   category: { type: String },
   problemTemplate: { type: String, default: "other" },
   problemDetails: [problemDetailSchema],
+  location: {
+    city: { type: String, default: "" },
+    state: { type: String, default: "" },
+    area: { type: String, default: "" }
+  },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   watchers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comments: [commentSchema],

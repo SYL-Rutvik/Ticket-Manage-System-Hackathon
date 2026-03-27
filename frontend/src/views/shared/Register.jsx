@@ -10,7 +10,7 @@ const Register = () => {
   const navigate = useNavigate();
   const { user, signIn } = useAuth();
   const { registerUser, error, loading } = useAuthController();
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +28,7 @@ const Register = () => {
     <div className="min-h-screen bg-base w-full flex">
       {/* Left Pane - Form */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-12 relative z-10">
-        
+
         {/* Mobile Logo version */}
         <div className="lg:hidden absolute top-8 left-8 flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
@@ -37,7 +37,7 @@ const Register = () => {
           <span className="font-bold text-lg tracking-tight">TicketFlow</span>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -53,7 +53,7 @@ const Register = () => {
           <div className="bg-surface/40 sm:bg-transparent sm:border-transparent border border-border/50 rounded-3xl p-6 sm:p-0 shadow-xl shadow-black/20 sm:shadow-none mb-8">
             <AnimatePresence>
               {error && (
-                <motion.div 
+                <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -68,10 +68,10 @@ const Register = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
                 <div className="relative">
-                  <input 
-                    type="text" 
-                    required 
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     placeholder="John Doe"
                     value={name}
                     onChange={e => setName(e.target.value)}
@@ -82,10 +82,10 @@ const Register = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
                 <div className="relative">
-                  <input 
-                    type="email" 
-                    required 
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
+                  <input
+                    type="email"
+                    required
+                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     placeholder="name@example.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -96,17 +96,17 @@ const Register = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
                 <div className="relative flex items-center">
-                  <input 
-                    type={showPassword ? 'text' : 'password'} 
-                    required 
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
                     minLength="6"
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-12" 
+                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-12"
                     placeholder="Minimum 6 characters"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 text-gray-400 hover:text-gray-200 transition-colors"
                   >
@@ -115,10 +115,10 @@ const Register = () => {
                 </div>
               </div>
 
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                type="submit" 
+                type="submit"
                 className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-light text-white rounded-xl py-3 text-sm font-semibold tracking-wide transition-all shadow-[0_4px_20px_0_rgba(79,70,229,0.25)] hover:shadow-[0_6px_25px_rgba(79,70,229,0.35)] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                 disabled={loading}
               >
@@ -144,7 +144,7 @@ const Register = () => {
           <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen" />
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
         </div>
-        
+
         <div className="relative z-10 flex flex-col h-full justify-between items-center w-full">
           {/* Large Logo Corner */}
           <div className="w-full flex justify-end">
@@ -158,7 +158,7 @@ const Register = () => {
 
           {/* Value Prop Graphic / Text */}
           <div className="w-full max-w-lg text-center mt-20">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
@@ -170,20 +170,20 @@ const Register = () => {
               <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-blue-500/20 border border-blue-500/30 rounded-2xl flex items-center justify-center backdrop-blur-md -rotate-12">
                 <Sparkles size={24} className="text-blue-400" />
               </div>
-              
+
               <h2 className="text-2xl font-bold text-white mb-4">Focus on resolution</h2>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Join thousands of agents and managers who use TicketFlow to deliver exceptional customer support experiences every single day.
               </p>
             </motion.div>
           </div>
-          
+
           <div className="w-full flex justify-center pb-8">
             {/* Optional footer info */}
           </div>
         </div>
       </div>
-    
+
     </div>
   );
 };

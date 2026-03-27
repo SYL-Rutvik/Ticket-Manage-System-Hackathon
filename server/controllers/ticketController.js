@@ -13,7 +13,14 @@ const getAll = async (req, res) => {
   try {
     const { status, priority, category, assignedTo, search, limit = 50, skip = 0 } = req.query;
     let query = {};
+
+    // 📍 Location Filtering: Agents only see tickets from their city
+    if (req.user.role === "agent" && req.user.location?.city) {
+      query["location.city"] = req.user.location.city;
+    }
+
     if (status) query.status = status;
+
     if (priority) query.priority = priority;
     if (category) query.category = category;
     if (assignedTo) query.assignedTo = assignedTo;
@@ -81,9 +88,11 @@ const create = async (req, res) => {
     const ticket = new Ticket({
       title, description, status: "open", priority: p,
       category, createdBy: req.user.id,
+      location: req.user.location || { city: "Surat", state: "Gujarat", area: "" },
       activityLog: [{ user: req.user.id, action: "Ticket created" }],
       sla_due_at
     });
+
 
     await ticket.save();
     res.status(201).json(ticket);
@@ -113,13 +122,16 @@ const updateStatus = async (req, res) => {
     ticket.status = status;
     ticket.activityLog.push({ user: req.user.id, action: `Status changed to ${status}` });
     await ticket.save();
-    
-    // Auto-Notify Customer
-    await ticket.populate("createdBy", "name email");
-    if (ticket.createdBy && ticket.createdBy.email) {
-      await sendTicketUpdateEmail(ticket.createdBy.email, ticket.createdBy.name, ticket._id, status);
-    }
-    
+
+    // Auto-Notify Customer (Non-blocking)
+    ticket.populate("createdBy", "name email").then(t => {
+      if (t.createdBy && t.createdBy.email) {
+        sendTicketUpdateEmail(t.createdBy.email, t.createdBy.name, t._id, status)
+          .catch(e => console.error("Update email failed: ", e));
+      }
+    });
+
+
     res.json(ticket);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
@@ -145,13 +157,16 @@ const assign = async (req, res) => {
     ticket.assignedTo = targetAgentId;
     ticket.activityLog.push({ user: req.user.id, action: `Assigned ticket` });
     await ticket.save();
-    
-    // Auto-Notify Customer of assignment
-    await ticket.populate("createdBy", "name email");
-    if (ticket.createdBy && ticket.createdBy.email) {
-      await sendTicketUpdateEmail(ticket.createdBy.email, ticket.createdBy.name, ticket._id, "Assigned to Agent");
-    }
-    
+
+    // Auto-Notify Customer of assignment (Non-blocking)
+    ticket.populate("createdBy", "name email").then(t => {
+      if (t.createdBy && t.createdBy.email) {
+        sendTicketUpdateEmail(t.createdBy.email, t.createdBy.name, t._id, "Assigned to Agent")
+          .catch(e => console.error("Assignment email failed: ", e));
+      }
+    });
+
+
     res.json(ticket);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };

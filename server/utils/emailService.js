@@ -2,12 +2,19 @@ const nodemailer = require('nodemailer');
 
 // A flexible email service that attempts to use real SMTP if provided,
 // but safely falls back to standard console logging for hackathons/dev environments.
-const transporterOpts = process.env.SMTP_USER ? {
-  service: process.env.SMTP_SERVICE || 'gmail',
+const cleanEnv = (value = '') => String(value).trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+
+const smtpUser = cleanEnv(process.env.SMTP_USER);
+const smtpPass = cleanEnv(process.env.SMTP_PASS).replace(/\s+/g, '');
+const smtpService = cleanEnv(process.env.SMTP_SERVICE) || 'gmail';
+const smtpFrom = cleanEnv(process.env.SMTP_FROM) || '"IT Support" <no-reply@ticketsystem.local>';
+
+const transporterOpts = smtpUser ? {
+  service: smtpService,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    user: smtpUser,
+    pass: smtpPass,
+  },
 } : {
   streamTransport: true, // Use stream transport to just print to console securely
   newline: 'windows',
@@ -17,7 +24,7 @@ const transporter = nodemailer.createTransport(transporterOpts);
 
 const sendCredentials = async (email, name, plainTextPassword) => {
   const mailOptions = {
-    from: process.env.SMTP_FROM || '"IT Support" <no-reply@ticketsystem.local>',
+    from: smtpFrom,
     to: email,
     subject: 'Welcome to the Support Portal - Your Login Credentials',
     text: `Hello ${name},\n\nAn administrator has created an account for you.\n\nYour Login Credentials:\nEmail: ${email}\nPassword: ${plainTextPassword}\n\nPlease log in and change your password immediately from your Profile Settings.\n\nBest regards,\nIT Service Desk`,
@@ -41,23 +48,25 @@ const sendCredentials = async (email, name, plainTextPassword) => {
     const info = await transporter.sendMail(mailOptions);
     
     // In dev mode (streamTransport), we log it to console to prove it works
-    if (!process.env.SMTP_HOST) {
+    if (!smtpUser) {
       console.log('=============================================');
       console.log('📬 [DEV MODE] EMAIL DISPATCHED SUCCESSFULLY');
       console.log(`To: ${email}`);
       console.log(`Password: ${plainTextPassword}`);
       console.log('=============================================');
+    } else {
+      console.log(`📬 EMAIL SENT: ${email}`);
     }
     return true;
   } catch (err) {
-    console.error('Failed to send email:', err);
+    console.error('Failed to send email:', err?.message || err);
     return false;
   }
 };
 
 const sendTicketUpdateEmail = async (email, name, ticketId, newStatus) => {
   const mailOptions = {
-    from: process.env.SMTP_FROM || '"IT Support" <no-reply@ticketsystem.local>',
+    from: smtpFrom,
     to: email,
     subject: `Update on your Support Ticket #${ticketId}`,
     text: `Hello ${name},\n\nYour support ticket #${ticketId} has been updated to: ${newStatus.toUpperCase()}.\n\nPlease log in to the portal to view the latest updates.\n\nBest regards,\nIT Service Desk`,
@@ -78,13 +87,13 @@ const sendTicketUpdateEmail = async (email, name, ticketId, newStatus) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    if (!process.env.SMTP_HOST) {
+    if (!smtpUser) {
       console.log('📬 [DEV] TICKET UPDATE EMAIL SENT');
       console.log(`To: ${email} | Ticket ID: ${ticketId} | Status: ${newStatus}`);
     }
     return true;
   } catch (err) {
-    console.error('Failed to send ticket email:', err);
+    console.error('Failed to send ticket email:', err?.message || err);
     return false;
   }
 };
