@@ -15,6 +15,8 @@ const CustomerManagement = () => {
     name: '', email: '', role: 'employee',
     city: '', state: '', area: ''
   });
+  const [viewingUserTickets, setViewingUserTickets] = useState(null);
+
 
   // Filter only employees
   const customers = users.filter(u => u.role === 'employee');
@@ -34,7 +36,7 @@ const CustomerManagement = () => {
         area: formData.area
       }
     };
-    
+
     const result = await addUser(payload);
     if (!result?.ok) {
       setFormError(result?.error || 'Failed to create employee. Email may already be registered.');
@@ -106,7 +108,7 @@ const CustomerManagement = () => {
                   >
                     <td className="py-4 px-6 font-mono text-gray-500 text-xs">#{u.id}</td>
                     <td className="py-4 px-6">
-                      <div className="font-bold text-gray-200 group-hover:text-primary-light transition-colors">{u.name}</div>
+                      <div className="font-bold text-gray-200 group-hover:text-primary-light transition-colors cursor-pointer" onClick={() => setViewingUserTickets(u)}>{u.name}</div>
                       <div className="text-[11px] text-gray-500 font-medium mt-0.5">{u.email}</div>
                       {u.location?.city && (
                         <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-1">
@@ -114,6 +116,7 @@ const CustomerManagement = () => {
                         </div>
                       )}
                     </td>
+
                     <td className="py-4 px-6">
                       <RoleBadge role={u.role} />
                     </td>
@@ -191,8 +194,21 @@ const CustomerManagement = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* User Tickets Drill-Down Modal */}
+      <AnimatePresence>
+        {viewingUserTickets && (
+          <UserTicketsModal
+            user={viewingUserTickets}
+            onClose={() => setViewingUserTickets(null)}
+            mode="created"
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
+
+import UserTicketsModal from './UserTicketsModal';
 
 export default CustomerManagement;

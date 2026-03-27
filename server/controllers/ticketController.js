@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Ticket = require("../models/ticketModel");
 const User = require("../models/userModel");
 const { sendTicketUpdateEmail } = require("../utils/emailService");
@@ -20,26 +21,92 @@ const getAll = async (req, res) => {
     }
 
     if (status) query.status = status;
-
     if (priority) query.priority = priority;
     if (category) query.category = category;
-    if (assignedTo) query.assignedTo = assignedTo;
+
+    // 🔍 Convert string IDs to ObjectIds for Aggregation Match
+    if (assignedTo && mongoose.Types.ObjectId.isValid(assignedTo)) {
+      query.assignedTo = new mongoose.Types.ObjectId(assignedTo);
+    }
+    if (req.query.createdBy && mongoose.Types.ObjectId.isValid(req.query.createdBy)) {
+      query.createdBy = new mongoose.Types.ObjectId(req.query.createdBy);
+    }
+
     if (search) {
       const q = new RegExp(search, "i");
       query.$or = [{ title: q }, { description: q }];
     }
 
-    const tickets = await Ticket.find(query)
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip(parseInt(skip))
-      .populate("createdBy", "name email role location")
-      .populate("assignedTo", "name email role");
+
+    // Advanced sorting using Aggregation
+    const tickets = await Ticket.aggregate([
+      { $match: query },
+      // 🥇 Map Status to Weight (Lower is higher priority in list)
+      {
+        $addFields: {
+          statusWeight: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$status", "open"] }, then: 1 },
+                { case: { $eq: ["$status", "in-progress"] }, then: 2 },
+                { case: { $eq: ["$status", "resolved"] }, then: 3 }
+              ],
+              default: 4
+            }
+          },
+          // 🥈 Map Priority to Weight
+          priorityWeight: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$priority", "critical"] }, then: 1 },
+                { case: { $eq: ["$priority", "high"] }, then: 2 },
+                { case: { $eq: ["$priority", "medium"] }, then: 3 },
+                { case: { $eq: ["$priority", "low"] }, then: 4 }
+              ],
+              default: 5
+            }
+          }
+        }
+      },
+      // 🥉 Execute Multi-level Sort
+      { $sort: { statusWeight: 1, priorityWeight: 1, createdAt: -1 } },
+      { $skip: parseInt(skip) },
+      { $limit: parseInt(limit) },
+      // 🏁 Final Step: Populate references (aggregate doesn't support .populate())
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy"
+        }
+      },
+      { $unwind: { path: "$createdBy", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "assignedTo",
+          foreignField: "_id",
+          as: "assignedTo"
+        }
+      },
+      { $unwind: { path: "$assignedTo", preserveNullAndEmptyArrays: true } },
+      // Project fields to match the expected format and remove internal weights
+      {
+        $project: {
+          statusWeight: 0,
+          priorityWeight: 0,
+          "createdBy.passwordHash": 0,
+          "assignedTo.passwordHash": 0
+        }
+      }
+    ]);
 
     const count = await Ticket.countDocuments(query);
     res.json({ count, tickets, total: count, hasMore: parseInt(skip) + parseInt(limit) < count });
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
+
 
 const getMine = async (req, res) => {
   try {

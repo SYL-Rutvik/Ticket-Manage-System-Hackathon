@@ -15,6 +15,8 @@ const AgentManagement = () => {
     name: '', email: '', role: 'agent',
     city: '', state: '', area: ''
   });
+  const [viewingUserTickets, setViewingUserTickets] = useState(null);
+
 
 
   // Filter only staff/agents (exclude entry-level employees)
@@ -23,9 +25,20 @@ const AgentManagement = () => {
   const handleCreateAgent = async (e) => {
     e.preventDefault();
     setFormError('');
-    const result = await addUser({ ...formData, role: 'agent' });
+
+    const payload = {
+      ...formData,
+      role: 'agent',
+      location: {
+        city: formData.city,
+        state: formData.state,
+        area: formData.area
+      }
+    };
+
+    const result = await addUser(payload);
     if (!result?.ok) {
-      setFormError(result?.error || 'Failed to create agent. Email may already be registered.');
+      setFormError(result?.error || 'Failed to create agent.');
     } else {
       if (!result.emailSent) {
         setFormError(`${result.warning || 'Agent created but email failed.'}${result.tempPassword ? ` Temporary password: ${result.tempPassword}` : ''}`);
@@ -34,8 +47,8 @@ const AgentManagement = () => {
       setIsModalOpen(false);
       setFormData({ name: '', email: '', role: 'agent', city: '', state: '', area: '' });
     }
-
   };
+
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
@@ -95,7 +108,7 @@ const AgentManagement = () => {
                   >
                     <td className="py-4 px-6 font-mono text-gray-500 text-xs">#{u.id}</td>
                     <td className="py-4 px-6">
-                      <div className="font-bold text-gray-200 group-hover:text-primary-light transition-colors">{u.name}</div>
+                      <div className="font-bold text-gray-200 group-hover:text-primary-light transition-colors cursor-pointer" onClick={() => setViewingUserTickets(u)}>{u.name}</div>
                       <div className="text-[11px] text-gray-500 font-medium mt-0.5">{u.email}</div>
                       {u.location?.city && (
                         <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-1 italic">
@@ -103,6 +116,7 @@ const AgentManagement = () => {
                         </div>
                       )}
                     </td>
+
 
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-4">
@@ -191,8 +205,21 @@ const AgentManagement = () => {
           </div>
         )}
       </AnimatePresence>
+      {/* User Tickets Drill-Down Modal */}
+      <AnimatePresence>
+        {viewingUserTickets && (
+          <UserTicketsModal
+            user={viewingUserTickets}
+            onClose={() => setViewingUserTickets(null)}
+            mode="assigned"
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
 
+import UserTicketsModal from './UserTicketsModal';
+
 export default AgentManagement;
+
