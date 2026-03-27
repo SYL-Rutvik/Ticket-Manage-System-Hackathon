@@ -1,121 +1,96 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '@/shared/context/AuthContext';
+import ProtectedRoute from '@/components/shared/ProtectedRoute';
+import Sidebar from '@/components/shared/Sidebar';
+
+// Loading Fallback Component
+const PageSkeleton = () => (
+  <div className="p-8 w-full h-full flex flex-col gap-6 animate-pulse">
+    <div className="w-1/3 h-8 bg-elevated rounded-lg mb-4"></div>
+    <div className="w-full h-32 bg-elevated rounded-xl"></div>
+    <div className="w-full h-64 bg-elevated rounded-xl"></div>
+  </div>
+);
+
+// Lazy Loaded Views
+const Login = lazy(() => import('@/views/shared/Login'));
+const Register = lazy(() => import('@/views/shared/Register'));
+
+// Customer
+const MyTickets = lazy(() => import('@/views/customer/MyTickets'));
+const CreateTicket = lazy(() => import('@/views/customer/CreateTicket'));
+const TicketDetailCustomer = lazy(() => import('@/views/customer/TicketDetail'));
+
+// Agent
+const TicketQueue = lazy(() => import('@/views/agent/TicketQueue'));
+const MyAssigned = lazy(() => import('@/views/agent/MyAssigned'));
+const TicketDetailAgent = lazy(() => import('@/views/agent/TicketDetail'));
+
+// Admin
+const Dashboard = lazy(() => import('@/views/admin/Dashboard'));
+const UserManagement = lazy(() => import('@/views/admin/UserManagement'));
+const SLAConfig = lazy(() => import('@/views/admin/SLAConfig'));
+
+// Layout wrapper
+const AppLayout = ({ children }) => (
+  <div className="app-layout">
+    <Sidebar />
+    <main className="main-content">
+      <div className="max-w-6xl mx-auto w-full">
+        <Suspense fallback={<PageSkeleton />}>
+          {children}
+        </Suspense>
+      </div>
+    </main>
+  </div>
+);
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={
+            <Suspense fallback={<div className="h-screen w-screen bg-base flex flex-col items-center justify-center space-y-4"><div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div><p className="text-gray-400 font-medium tracking-widest text-sm uppercase">Loading Application...</p></div>}>
+              <Login />
+            </Suspense>
+          } />
+          <Route path="/register" element={
+            <Suspense fallback={<div className="h-screen w-screen bg-base flex flex-col items-center justify-center space-y-4"><div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div><p className="text-gray-400 font-medium tracking-widest text-sm uppercase">Loading Application...</p></div>}>
+              <Register />
+            </Suspense>
+          } />
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <div className="ticks"></div>
+          {/* Customer Routes */}
+          <Route path="/customer/*" element={<ProtectedRoute roles={['customer']}><AppLayout /></ProtectedRoute>}>
+            <Route path="tickets" element={<MyTickets />} />
+            <Route path="tickets/create" element={<CreateTicket />} />
+            <Route path="tickets/:id" element={<TicketDetailCustomer />} />
+          </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* Agent Routes */}
+          <Route path="/agent/*" element={<ProtectedRoute roles={['agent', 'admin']}><AppLayout /></ProtectedRoute>}>
+            <Route path="queue" element={<TicketQueue />} />
+            <Route path="assigned" element={<MyAssigned />} />
+            <Route path="tickets/:id" element={<TicketDetailAgent />} />
+          </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          {/* Admin Routes */}
+          <Route path="/admin/*" element={<ProtectedRoute roles={['admin']}><AppLayout /></ProtectedRoute>}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="sla" element={<SLAConfig />} />
+          </Route>
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
