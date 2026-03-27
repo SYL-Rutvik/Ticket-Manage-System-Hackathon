@@ -15,6 +15,10 @@ router.get("/", auth, requireRole("agent"), ctrl.getAll);
 // All roles — single ticket
 router.get("/:id", auth, ctrl.getById);
 
+// Comments — all roles can read, only authenticated can write
+router.get("/:id/comments", auth, ctrl.getComments);
+router.post("/:id/comments", auth, ctrl.addComment);
+
 // Customer — create
 router.post("/", auth, requireRole("employee"), ctrl.create);
 

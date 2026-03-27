@@ -10,21 +10,14 @@ import CommentSection from '@/components/shared/CommentSection';
 import InternalNotes from '@/components/agent/InternalNotes';
 import { formatDateTime } from '@/shared/utils/formatDate';
 import { getAllowedTransitions } from '@/shared/utils/fsmTransitions';
-import { getTicketAuditLog } from '@/services/agent/auditService';
 import { useNavigate } from 'react-router-dom';
 
 const TicketDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { ticket, loading, error, fetchOne, changeStatus, assign, changePriority, removeTicket } = useTicketController();
-  const [auditLogs, setAuditLogs] = useState([]);
   const [showAudit, setShowAudit] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => { 
-    fetchOne(id); 
-    getTicketAuditLog(id).then(d => setAuditLogs(d.logs)).catch(() => {});
-  }, [id, fetchOne]);
 
   if (loading || !ticket) return (
     <div className="p-12 flex justify-center">
@@ -203,25 +196,24 @@ const TicketDetail = () => {
                 <History size={14} /> Change History
               </h3>
               <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-600 before:to-transparent">
-                {auditLogs.map(log => (
-                  <div key={log.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div className="flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 bg-surface shrink-0 z-10">
-                       <div className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
-                    </div>
-                    <div className="w-[calc(100%-2.5rem)] ml-3 p-3 rounded-xl bg-surface border border-border shadow-sm">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[11px] font-bold text-gray-300 uppercase">{log.actorName}</span>
-                        <span className="text-[10px] font-medium text-gray-500">{formatDateTime(log.createdAt)}</span>
+                {ticket.activityLog && ticket.activityLog.length > 0 ? (
+                  ticket.activityLog.map((log, idx) => (
+                    <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                      <div className="flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 bg-surface shrink-0 z-10">
+                         <div className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
                       </div>
-                      <p className="text-[13px] text-gray-400">
-                        {log.action === 'status_changed' && <span>Changed status: <strong className="text-gray-200">{log.oldValue}</strong> → <strong className="text-gray-200">{log.newValue}</strong></span>}
-                        {log.action === 'assigned' && <span>Assigned to <strong className="text-gray-200">{log.newValue}</strong></span>}
-                        {log.action === 'priority_changed' && <span>Set priority: <strong className="text-gray-200">{log.newValue}</strong></span>}
-                        {log.action === 'created' && <span>Created the ticket</span>}
-                      </p>
+                      <div className="w-[calc(100%-2.5rem)] ml-3 p-3 rounded-xl bg-surface border border-border shadow-sm">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[11px] font-bold text-gray-300 uppercase">{typeof log.user === 'object' ? log.user?.name : 'System'}</span>
+                          <span className="text-[10px] font-medium text-gray-500">{formatDateTime(log.createdAt)}</span>
+                        </div>
+                        <p className="text-[13px] text-gray-400">{log.action}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-xs text-gray-500 italic text-center py-4">No activity recorded yet.</p>
+                )}
               </div>
             </motion.div>
           )}

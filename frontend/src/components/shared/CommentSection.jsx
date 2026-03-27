@@ -39,23 +39,27 @@ const CommentSection = ({ ticketId }) => {
       
       <div className="space-y-4">
         <AnimatePresence>
-          {comments.map((c, i) => (
-            <motion.div 
-              key={c.id} 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className={`p-4 rounded-2xl border ${c.author === user.name ? 'bg-primary/10 border-primary/20 ml-8' : 'bg-surface border-border/60 mr-8'}`}
-            >
-              <div className="flex justify-between items-center mb-2">
-                <span className={`text-xs font-bold ${c.author === user.name ? 'text-primary-light' : 'text-gray-300'}`}>
-                  {c.author === user.name ? 'You' : c.author}
-                </span>
-                <span className="text-[10px] text-gray-500 font-medium">{formatDateTime(c.createdAt)}</span>
-              </div>
-              <p className="text-[14px] text-gray-300 whitespace-pre-wrap leading-relaxed">{c.text}</p>
-            </motion.div>
-          ))}
+          {comments.map((c, i) => {
+            const authorName = typeof c.user === 'object' ? c.user?.name : c.author;
+            const isAuthor = authorName === user.name;
+            return (
+              <motion.div 
+                key={c._id || i} 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={`p-4 rounded-2xl border ${isAuthor ? 'bg-primary/10 border-primary/20 ml-8' : 'bg-surface border-border/60 mr-8'}`}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className={`text-xs font-bold ${isAuthor ? 'text-primary-light' : 'text-gray-300'}`}>
+                    {isAuthor ? 'You' : authorName}
+                  </span>
+                  <span className="text-[10px] text-gray-500 font-medium">{formatDateTime(c.createdAt)}</span>
+                </div>
+                <p className="text-[14px] text-gray-300 whitespace-pre-wrap leading-relaxed">{c.message || c.text}</p>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
         
         {comments.length === 0 && (

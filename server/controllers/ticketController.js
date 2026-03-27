@@ -155,4 +155,26 @@ const getStats = async (req, res) => {
   } catch(err) { res.status(500).json({error: err.message}); }
 };
 
-module.exports = { getAll, getMine, getById, create, updateStatus, assign, updatePriority, remove, getStats };
+const getComments = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id).populate("comments.user", "name email");
+    if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+    res.json({ comments: ticket.comments || [] });
+  } catch(err) { res.status(500).json({error: err.message}); }
+};
+
+const addComment = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: "message is required" });
+    
+    ticket.comments.push({ user: req.user.id, message });
+    await ticket.save();
+    await ticket.populate("comments.user", "name email");
+    res.json({ comments: ticket.comments });
+  } catch(err) { res.status(500).json({error: err.message}); }
+};
+
+module.exports = { getAll, getMine, getById, create, updateStatus, assign, updatePriority, remove, getStats, getComments, addComment };

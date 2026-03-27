@@ -57,7 +57,7 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="bg-surface border border-border rounded-2xl p-6 md:p-8 shadow-xl">
           <h3 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2"><Clock size={16}/> Tickets by Priority</h3>
           <div className="space-y-6">
-            {Object.entries(stats.byPriority).map(([k, v]) => {
+            {stats.byPriority && Object.entries(stats.byPriority).map(([k, v]) => {
               const colors = { critical: 'bg-red-500', high: 'bg-orange-500', medium: 'bg-amber-500', low: 'bg-gray-500' };
               const barWidth = stats.total > 0 ? (v / stats.total) * 100 : 0;
               return (
@@ -84,20 +84,21 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="bg-surface border border-border rounded-2xl p-6 md:p-8 shadow-xl">
           <h3 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2"><Users size={16}/> Agent Workload (Active)</h3>
           <div className="space-y-5">
-            {Object.entries(stats.agentWorkload).map(([agentId, count], i) => {
-              const maxExpected = 10;
-              const w = Math.min((count / maxExpected) * 100, 100);
-              const barColor = w > 80 ? 'bg-red-500' : 'bg-primary-light';
-              return (
-                <div key={agentId} className="flex items-center gap-4 group">
-                  <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm shadow-inner shrink-0 group-hover:scale-110 transition-transform">
-                    A{agentId}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-xs font-bold tracking-wider mb-2">
-                      <span className="text-gray-200">Agent #{agentId}</span>
-                      <span className="text-gray-400">{count} tickets</span>
+            {(stats.agentWorkload && Object.entries(stats.agentWorkload).length > 0) ? (
+              Object.entries(stats.agentWorkload).map(([agentId, count], i) => {
+                const maxExpected = 10;
+                const w = Math.min((count / maxExpected) * 100, 100);
+                const barColor = w > 80 ? 'bg-red-500' : 'bg-primary-light';
+                return (
+                  <div key={agentId} className="flex items-center gap-4 group">
+                    <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                      A{agentId}
                     </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between text-xs font-bold tracking-wider mb-2">
+                        <span className="text-gray-200">Agent #{agentId}</span>
+                        <span className="text-gray-400">{count} tickets</span>
+                      </div>
                     <div className="w-full h-2 bg-elevated rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }} animate={{ width: `${w}%` }} transition={{ duration: 1, delay: 0.5 + (i * 0.1) }}
@@ -107,9 +108,9 @@ const Dashboard = () => {
                   </div>
                 </div>
               );
-            })}
-            {Object.keys(stats.agentWorkload).length === 0 && (
-              <p className="text-xs font-medium text-gray-500 italic text-center py-8">No agents are currently assigned active tickets.</p>
+              })
+            ) : (
+              <p className="text-xs font-medium text-gray-500 italic text-center py-8">No agent workload data available.</p>
             )}
           </div>
         </motion.div>

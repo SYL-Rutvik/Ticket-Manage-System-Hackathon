@@ -16,7 +16,8 @@ app.use(express.json());
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api/auth",    require("./routes/authRoutes"));
 app.use("/api/tickets", require("./routes/ticketRoutes"));
-app.use("/api/users",  require("./routes/userRoutes"));
+app.use("/api/users",   require("./routes/userRoutes"));
+app.use("/api/sla",     require("./routes/slaRoutes"));
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get("/", (req, res) => res.json({ message: "🎫 Ticket Management API v2 (MVC)" }));
@@ -30,4 +31,5 @@ app.listen(PORT, () => {
   console.log(`🔐 Auth   → POST /api/auth/register | /api/auth/login`);
   console.log(`🎫 Tickets → /api/tickets`);
   console.log(`👤 Users  → /api/users`);
+  console.log(`⏱️  SLA    → /api/sla`);
 });

@@ -34,10 +34,10 @@ const SLAConfig = () => {
         </h3>
         
         <div className="space-y-4">
-          <AnimatePresence>
-            {['critical', 'high', 'medium', 'low'].map((priority, i) => (
+          <AnimatePresence mode="wait">
+            {sla && ['critical', 'high', 'medium', 'low'].map((priority, i) => (
               <motion.div 
-                key={priority} 
+                key={`sla-${priority}`}
                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-elevated/40 border border-border/50 hover:border-gray-500/50 transition-colors group"
               >
@@ -45,7 +45,7 @@ const SLAConfig = () => {
                 <div className="flex flex-col gap-2">
                   <div className="flex"><PriorityBadge priority={priority} /></div>
                   <p className="text-[13px] text-gray-400 font-medium w-full max-w-sm">
-                    Must be resolved within <strong className="text-gray-200 font-bold">{sla[priority]} hours</strong>. Breaches trigger alerts in dashboard.
+                    Must be resolved within <strong className="text-gray-200 font-bold">{sla[priority] || 0} hours</strong>. Breaches trigger alerts in dashboard.
                   </p>
                 </div>
 
@@ -56,7 +56,7 @@ const SLAConfig = () => {
                       type="number" 
                       min="1" 
                       className="form-input w-28 pl-9 text-center font-mono font-bold text-sm bg-surface shadow-inner focus:ring-primary/20" 
-                      defaultValue={sla[priority]}
+                      defaultValue={sla[priority] || 0}
                       onBlur={(e) => handleSave(priority, e.target.value)}
                     />
                   </div>
