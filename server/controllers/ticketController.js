@@ -9,7 +9,7 @@ const FSM = {
 
 const getAll = async (req, res) => {
   try {
-    const { status, priority, category, assignedTo, search } = req.query;
+    const { status, priority, category, assignedTo, search, limit = 50, skip = 0 } = req.query;
     let query = {};
     if (status) query.status = status;
     if (priority) query.priority = priority;
@@ -19,15 +19,29 @@ const getAll = async (req, res) => {
       const q = new RegExp(search, "i");
       query.$or = [{ title: q }, { description: q }];
     }
-    const tickets = await Ticket.find(query).sort({ createdAt: -1 }).populate("createdBy", "name email role").populate("assignedTo", "name email role");
-    res.json({ count: tickets.length, tickets });
+    
+    const tickets = await Ticket.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(skip))
+      .populate("createdBy", "name email role")
+      .populate("assignedTo", "name email role");
+      
+    const count = await Ticket.countDocuments(query);
+    res.json({ count, tickets, total: count, hasMore: parseInt(skip) + parseInt(limit) < count });
   } catch(err) { res.status(500).json({error: err.message}); }
 };
 
 const getMine = async (req, res) => {
   try {
-    const tickets = await Ticket.find({ createdBy: req.user.id }).sort({ createdAt: -1 }).populate("assignedTo", "name email role");
-    res.json({ count: tickets.length, tickets });
+    const { limit = 50, skip = 0 } = req.query;
+    const tickets = await Ticket.find({ createdBy: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(skip))
+      .populate("assignedTo", "name email role");
+    const count = await Ticket.countDocuments({ createdBy: req.user.id });
+    res.json({ count, tickets, hasMore: parseInt(skip) + parseInt(limit) < count });
   } catch(err) { res.status(500).json({error: err.message}); }
 };
 
@@ -36,12 +50,15 @@ const getById = async (req, res) => {
     const ticket = await Ticket.findById(req.params.id)
       .populate("createdBy", "name email role")
       .populate("assignedTo", "name email role")
-      .populate("comments.user", "name email role")
-      .populate("activityLog.user", "name email role");
+      .maxTimeMS(5000);  // 5 second timeout to prevent hanging
 
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
     if (req.user.role === "employee" && String(ticket.createdBy._id) !== String(req.user.id))
       return res.status(403).json({ error: "Access denied" });
+    
+    // Ensure arrays exist for frontend
+    if (!ticket.comments) ticket.comments = [];
+    if (!ticket.activityLog) ticket.activityLog = [];
     
     res.json(ticket);
   } catch(err) { res.status(500).json({error: err.message}); }
@@ -137,19 +154,25 @@ const remove = async (req, res) => {
 
 const getStats = async (req, res) => {
   try {
-    // Basic stats implementation
-    const total = await Ticket.countDocuments();
-    const open = await Ticket.countDocuments({ status: "open" });
-    const inProgress = await Ticket.countDocuments({ status: "in-progress" });
-    const resolved = await Ticket.countDocuments({ status: "resolved" });
-    const closed = await Ticket.countDocuments({ status: "closed" });
-    const slaBreached = await Ticket.countDocuments({ sla_due_at: { $lt: new Date() }, status: { $nin: ["resolved", "closed"] } });
-    
-    // priorities
-    const byPriority = {};
-    for (const p of ["low", "medium", "high", "critical"]) {
-      byPriority[p] = await Ticket.countDocuments({ priority: p });
-    }
+    // Parallel counts for performance
+    const [total, open, inProgress, resolved, closed, slaBreached] = await Promise.all([
+      Ticket.countDocuments(),
+      Ticket.countDocuments({ status: "open" }),
+      Ticket.countDocuments({ status: "in-progress" }),
+      Ticket.countDocuments({ status: "resolved" }),
+      Ticket.countDocuments({ status: "closed" }),
+      Ticket.countDocuments({ sla_due_at: { $lt: new Date() }, status: { $nin: ["resolved", "closed"] } })
+    ]);
+
+    // Get priority breakdown
+    const priorityData = await Ticket.aggregate([
+      { $group: { _id: "$priority", count: { $sum: 1 } } }
+    ]);
+
+    const byPriority = { low: 0, medium: 0, high: 0, critical: 0 };
+    priorityData.forEach(p => {
+      if (byPriority.hasOwnProperty(p._id)) byPriority[p._id] = p.count;
+    });
 
     res.json({ total, open, inProgress, resolved, closed, slaBreached, byPriority });
   } catch(err) { res.status(500).json({error: err.message}); }

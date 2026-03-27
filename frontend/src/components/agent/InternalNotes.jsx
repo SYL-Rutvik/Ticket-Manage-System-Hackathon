@@ -16,9 +16,13 @@ const InternalNotes = ({ ticketId }) => {
 
   useEffect(() => {
     let mounted = true;
-    getNotes(ticketId).then(data => {
-      if (mounted) { setNotes(data); setLoading(false); }
-    });
+    getNotes(ticketId)
+      .then(data => {
+        if (mounted) { setNotes(Array.isArray(data) ? data : []); setLoading(false); }
+      })
+      .catch(() => {
+        if (mounted) { setNotes([]); setLoading(false); }
+      });
     return () => { mounted = false; };
   }, [ticketId]);
 

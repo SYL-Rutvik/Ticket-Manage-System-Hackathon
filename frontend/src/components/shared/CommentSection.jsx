@@ -13,9 +13,13 @@ const CommentSection = ({ ticketId }) => {
 
   useEffect(() => {
     let mounted = true;
-    getComments(ticketId).then(data => {
-      if (mounted) { setComments(data); setLoading(false); }
-    });
+    getComments(ticketId)
+      .then(data => {
+        if (mounted) { setComments(Array.isArray(data) ? data : []); setLoading(false); }
+      })
+      .catch(() => {
+        if (mounted) { setComments([]); setLoading(false); }
+      });
     return () => { mounted = false; };
   }, [ticketId]);
 
