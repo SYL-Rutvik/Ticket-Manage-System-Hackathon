@@ -12,6 +12,7 @@ const getMe = async (req, res) => {
       email: user.email,
       role: user.role,
       isAvailable: user.isAvailable,
+      location: user.location,
       createdAt: user.createdAt,
     });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -22,7 +23,7 @@ const getAll = async (req, res) => {
     const users = await User.find().select("-passwordHash");
     const mappedUsers = users.map(u => ({
       id: u._id, name: u.name, email: u.email,
-      role: u.role, isAvailable: u.isAvailable, createdAt: u.createdAt
+      role: u.role, isAvailable: u.isAvailable, location: u.location, createdAt: u.createdAt
     }));
     res.json({ count: users.length, users: mappedUsers });
   } catch (err) { res.status(500).json({ error: err.message }) }
@@ -31,7 +32,7 @@ const getAll = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, role } = req.body;
+    const { name, email, role, location } = req.body;
     if (!name || !email) return res.status(400).json({ error: "Name and email are required" });
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -46,13 +47,19 @@ const createUser = async (req, res) => {
     let rawPassword = '';
     for (let i = 0; i < 8; i++) rawPassword += chars.charAt(Math.floor(Math.random() * chars.length));
 
-    const user = new User({ name, email: email.toLowerCase(), passwordHash: rawPassword, role: userRole });
+    const user = new User({ 
+      name, 
+      email: email.toLowerCase(), 
+      passwordHash: rawPassword, 
+      role: userRole,
+      location: location || {}
+    });
     await user.save(); // automatically hashed by pre-save hook
 
     // Dispatch email
     await sendCredentials(user.email, user.name, rawPassword);
 
-    res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role });
+    res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role, location: user.location });
   } catch (err) { res.status(500).json({ error: err.message }) }
 };
 

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { AuthProvider } from '@/shared/context/AuthContext';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import Sidebar from '@/components/shared/Sidebar';
+import { useLiveNotifications } from '@/hooks/shared/useLiveNotifications';
 
 // Loading Fallback Component
 const PageSkeleton = () => (
@@ -37,18 +38,23 @@ const AgentManagement = lazy(() => import('@/views/admin/AgentManagement'));
 const SLAConfig = lazy(() => import('@/views/admin/SLAConfig'));
 
 // Layout wrapper
-const AppLayout = () => (
-  <div className="flex min-h-screen bg-base w-full">
-    <Sidebar />
-    <main className="flex-1 w-full lg:ml-64 min-w-0 transition-all duration-300">
-      <div className="max-w-6xl mx-auto w-full p-4 md:p-8 pt-20 lg:pt-8 min-h-screen flex flex-col">
-        <Suspense fallback={<PageSkeleton />}>
-          <Outlet />
-        </Suspense>
-      </div>
-    </main>
-  </div>
-);
+const AppLayout = () => {
+  // Mount the global background tick polling for Push Notifications
+  useLiveNotifications(20000);
+  
+  return (
+    <div className="flex min-h-screen bg-base w-full">
+      <Sidebar />
+      <main className="flex-1 w-full lg:ml-64 min-w-0 transition-all duration-300">
+        <div className="max-w-6xl mx-auto w-full p-4 md:p-8 pt-20 lg:pt-8 min-h-screen flex flex-col">
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
+        </div>
+      </main>
+    </div>
+  );
+};
 
 function App() {
   return (

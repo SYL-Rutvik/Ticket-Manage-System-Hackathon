@@ -91,7 +91,9 @@ const TicketDetail = () => {
               <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight leading-tight">{ticket.title}</h1>
               <div className="flex flex-wrap items-center gap-3 text-[13px] font-bold text-gray-400">
                 <span className="flex items-center gap-1.5 bg-elevated/50 border border-border/50 px-3 py-1.5 rounded-lg shadow-sm">
-                  <User size={14} className="text-primary" /> Submitted by You
+                  <User size={14} className="text-primary" /> 
+                  Submitted by {ticket.createdBy?.name || 'You'}
+                  {ticket.createdBy?.location?.city && ` (${ticket.createdBy.location.city}, ${ticket.createdBy.location.state})`}
                 </span>
                 <span className="flex items-center gap-1.5 bg-elevated/50 border border-border/50 px-3 py-1.5 rounded-lg shadow-sm">
                   <Clock size={14} className="text-primary" /> {formatDateTime(ticket.createdAt)}

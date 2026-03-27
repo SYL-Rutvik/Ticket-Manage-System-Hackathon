@@ -11,7 +11,10 @@ const CustomerManagement = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formError, setFormError] = useState('');
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'employee' });
+  const [formData, setFormData] = useState({ 
+    name: '', email: '', role: 'employee',
+    city: '', state: '', area: '' 
+  });
 
   // Filter only employees
   const customers = users.filter(u => u.role === 'employee');
@@ -19,12 +22,25 @@ const CustomerManagement = () => {
   const handleCreateCustomer = async (e) => {
     e.preventDefault();
     setFormError('');
-    const success = await addUser({ ...formData, role: 'employee' });
+    
+    // Package location separately if needed, or pass flat (backend handles it)
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      role: 'employee',
+      location: {
+        city: formData.city,
+        state: formData.state,
+        area: formData.area
+      }
+    };
+    
+    const success = await addUser(payload);
     if (!success) {
       setFormError('Failed to create employee. Email may already be registered.');
     } else {
       setIsModalOpen(false);
-      setFormData({ name: '', email: '', role: 'employee' });
+      setFormData({ name: '', email: '', role: 'employee', city: '', state: '', area: '' });
     }
   };
 
@@ -88,6 +104,11 @@ const CustomerManagement = () => {
                     <td className="py-4 px-6">
                       <div className="font-bold text-gray-200 group-hover:text-primary-light transition-colors">{u.name}</div>
                       <div className="text-[11px] text-gray-500 font-medium mt-0.5">{u.email}</div>
+                      {u.location?.city && (
+                        <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-1">
+                          📍 {u.location.city}, {u.location.state}
+                        </div>
+                      )}
                     </td>
                     <td className="py-4 px-6">
                       <RoleBadge role={u.role} />
@@ -138,6 +159,23 @@ const CustomerManagement = () => {
                     <input required type="email" className="w-full bg-elevated/40 border border-border/80 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="john@example.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                   </div>
                 </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">City</label>
+                    <input className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="E.g. Rajkot" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">State</label>
+                    <input className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="E.g. Gujarat" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Area / Branch / Floor</label>
+                  <input className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="E.g. Main Hub, Floor 4" value={formData.area} onChange={e => setFormData({...formData, area: e.target.value})} />
+                </div>
+
                 <div className="pt-4">
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary-light text-white rounded-xl py-3.5 text-sm font-bold tracking-wide transition-all shadow-[0_4px_14px_0_rgba(79,70,229,0.25)] disabled:opacity-50 flex items-center justify-center gap-2">
                     {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <><Mail size={16}/> Provision Employee Account</>}

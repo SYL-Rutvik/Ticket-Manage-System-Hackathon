@@ -1,5 +1,6 @@
 const Ticket = require("../models/ticketModel");
 const User = require("../models/userModel");
+const { sendTicketUpdateEmail } = require("../utils/emailService");
 
 // FSM: allowed transitions per role
 const FSM = {
@@ -25,7 +26,7 @@ const getAll = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip(parseInt(skip))
-      .populate("createdBy", "name email role")
+      .populate("createdBy", "name email role location")
       .populate("assignedTo", "name email role");
 
     const count = await Ticket.countDocuments(query);
@@ -49,7 +50,7 @@ const getMine = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
-      .populate("createdBy", "name email role")
+      .populate("createdBy", "name email role location")
       .populate("assignedTo", "name email role")
       .maxTimeMS(5000);  // 5 second timeout to prevent hanging
 
@@ -112,6 +113,13 @@ const updateStatus = async (req, res) => {
     ticket.status = status;
     ticket.activityLog.push({ user: req.user.id, action: `Status changed to ${status}` });
     await ticket.save();
+    
+    // Auto-Notify Customer
+    await ticket.populate("createdBy", "name email");
+    if (ticket.createdBy && ticket.createdBy.email) {
+      await sendTicketUpdateEmail(ticket.createdBy.email, ticket.createdBy.name, ticket._id, status);
+    }
+    
     res.json(ticket);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
@@ -137,6 +145,13 @@ const assign = async (req, res) => {
     ticket.assignedTo = targetAgentId;
     ticket.activityLog.push({ user: req.user.id, action: `Assigned ticket` });
     await ticket.save();
+    
+    // Auto-Notify Customer of assignment
+    await ticket.populate("createdBy", "name email");
+    if (ticket.createdBy && ticket.createdBy.email) {
+      await sendTicketUpdateEmail(ticket.createdBy.email, ticket.createdBy.name, ticket._id, "Assigned to Agent");
+    }
+    
     res.json(ticket);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };

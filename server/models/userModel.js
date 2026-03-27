@@ -8,6 +8,13 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ["employee", "agent", "admin"], default: "employee" },
   // Agents toggle this to go Online/Offline — offline agents cannot claim new tickets
   isAvailable: { type: Boolean, default: true },
+  
+  // Embedded Document pattern for O(1) reads of Customer physical location
+  location: {
+    city: { type: String, default: "" },
+    state: { type: String, default: "" },
+    area: { type: String, default: "" }
+  }
 }, { timestamps: true });
 
 

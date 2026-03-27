@@ -55,4 +55,38 @@ const sendCredentials = async (email, name, plainTextPassword) => {
   }
 };
 
-module.exports = { sendCredentials };
+const sendTicketUpdateEmail = async (email, name, ticketId, newStatus) => {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '"IT Support" <no-reply@ticketsystem.local>',
+    to: email,
+    subject: `Update on your Support Ticket #${ticketId}`,
+    text: `Hello ${name},\n\nYour support ticket #${ticketId} has been updated to: ${newStatus.toUpperCase()}.\n\nPlease log in to the portal to view the latest updates.\n\nBest regards,\nIT Service Desk`,
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2>Ticket Update: #${ticketId}</h2>
+        <p>Hello ${name},</p>
+        <div style="background-color: #f4f4f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p>The status of your support ticket has been updated to:</p>
+          <p><strong style="font-size: 18px; color: #4f46e5; text-transform: uppercase;">${newStatus}</strong></p>
+        </div>
+        <p>Please log in to your Support Portal to view agent notes or provide additional information.</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
+        <p style="font-size: 12px; color: #6b7280;">Best regards,<br>IT Service Desk</p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    if (!process.env.SMTP_HOST) {
+      console.log('📬 [DEV] TICKET UPDATE EMAIL SENT');
+      console.log(`To: ${email} | Ticket ID: ${ticketId} | Status: ${newStatus}`);
+    }
+    return true;
+  } catch (err) {
+    console.error('Failed to send ticket email:', err);
+    return false;
+  }
+};
+
+module.exports = { sendCredentials, sendTicketUpdateEmail };
