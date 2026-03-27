@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, AlertCircle, Timer, HelpCircle, ChevronDown } from 'lucide-react';
 import { useTicketController } from '@/hooks/shared/useTickets';
-import { CATEGORY, PRIORITY } from '@/shared/utils/constants';
+import { CATEGORY, PRIORITY, CATEGORY_FOLLOWUP_QUESTIONS } from '@/shared/utils/constants';
 
 const PROBLEM_TEMPLATES = [
   { id: 'auth', label: 'Cannot login / Authentication Issue', priority: PRIORITY.HIGH, title: 'Authentication Issue' },
@@ -20,7 +20,10 @@ const CreateTicket = () => {
   const [templateId, setTemplateId] = useState('');
   const [form, setForm] = useState({ title: '', description: '', category: CATEGORY[0], priority: PRIORITY.MEDIUM });
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [detailAnswers, setDetailAnswers] = useState({});
   const dropdownRef = useRef(null);
+
+  const activeQuestions = CATEGORY_FOLLOWUP_QUESTIONS[form.category] || [];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -47,13 +50,38 @@ const CreateTicket = () => {
     }
   }, [templateId]);
 
+  useEffect(() => {
+    const defaults = {};
+    activeQuestions.forEach((q) => {
+      defaults[q.id] = '';
+    });
+    setDetailAnswers(defaults);
+  }, [form.category]);
+
+  const updateAnswer = (questionId, value) => {
+    setDetailAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const tmpl = PROBLEM_TEMPLATES.find(t => t.id === templateId);
     
     const finalTitle = tmpl && tmpl.id !== 'other' ? tmpl.title : form.title;
-    
-    const newTicket = await create({ ...form, title: finalTitle });
+
+    const problemDetails = activeQuestions
+      .map((q) => ({
+        key: q.id,
+        question: q.label,
+        answer: (detailAnswers[q.id] || '').trim(),
+      }))
+      .filter((item) => item.answer.length > 0);
+
+    const newTicket = await create({
+      ...form,
+      title: finalTitle,
+      problemTemplate: tmpl?.id || 'other',
+      problemDetails,
+    });
     if (newTicket) navigate(`/employee/tickets/${newTicket.id}`);
   };
 
@@ -187,6 +215,36 @@ const CreateTicket = () => {
                   </span>
                   <span className="text-[11px] text-gray-500 italic">(Locked by template)</span>
                 </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-300 mb-3 uppercase tracking-wide">Category Follow-up Questions</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {activeQuestions.map((q) => (
+                  <div key={q.id} className="bg-elevated/30 border border-border/60 rounded-xl p-3">
+                    <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wide">{q.label}</label>
+                    {q.type === 'select' ? (
+                      <select
+                        className="w-full bg-elevated/60 border border-border/80 rounded-lg px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-primary"
+                        value={detailAnswers[q.id] || ''}
+                        onChange={(e) => updateAnswer(q.id, e.target.value)}
+                      >
+                        <option value="">Select an option</option>
+                        {q.options.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        className="w-full bg-elevated/60 border border-border/80 rounded-lg px-3 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary"
+                        placeholder={q.placeholder || 'Type your answer'}
+                        value={detailAnswers[q.id] || ''}
+                        onChange={(e) => updateAnswer(q.id, e.target.value)}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 

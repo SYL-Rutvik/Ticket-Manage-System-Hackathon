@@ -217,6 +217,7 @@ const Dashboard = () => {
                 <th className="py-3 px-6 font-semibold text-gray-400 tracking-wider">Status</th>
                 <th className="py-3 px-6 font-semibold text-gray-400 tracking-wider">Priority</th>
                 {showDetails && <th className="py-3 px-6 font-semibold text-gray-400 tracking-wider">Assigned To</th>}
+                {showDetails && <th className="py-3 px-6 font-semibold text-gray-400 tracking-wider">Issue Inputs</th>}
                 {showDetails && <th className="py-3 px-6 font-semibold text-gray-400 tracking-wider">Created</th>}
               </tr>
             </thead>
@@ -237,6 +238,24 @@ const Dashboard = () => {
                     <td className="py-4 px-6"><StatusBadge status={t.status} /></td>
                     <td className="py-4 px-6"><PriorityBadge priority={t.priority} /></td>
                     {showDetails && <td className="py-4 px-6 text-gray-400 text-xs">{typeof t.assignedTo === 'object' ? t.assignedTo?.name : (t.assignedTo ? 'Assigned' : 'Unassigned')}</td>}
+                    {showDetails && (
+                      <td className="py-4 px-6 text-gray-400 text-xs max-w-xs">
+                        {Array.isArray(t.problemDetails) && t.problemDetails.length > 0 ? (
+                          <div className="space-y-1">
+                            {t.problemDetails.slice(0, 2).map((detail) => (
+                              <div key={detail.key} className="truncate">
+                                <span className="text-gray-500">{detail.question}:</span> <span className="text-gray-300">{detail.answer}</span>
+                              </div>
+                            ))}
+                            {t.problemDetails.length > 2 && (
+                              <div className="text-[10px] text-primary">+{t.problemDetails.length - 2} more</div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-600 italic">No inputs</span>
+                        )}
+                      </td>
+                    )}
                     {showDetails && <td className="py-4 px-6 text-gray-500 text-xs">{formatDateTime(t.createdAt).split(' ')[0]}</td>}
                   </motion.tr>
                 ))}

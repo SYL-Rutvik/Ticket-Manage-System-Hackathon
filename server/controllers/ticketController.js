@@ -66,7 +66,14 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
-    const { title, description, priority = "medium", category = "task" } = req.body;
+    const {
+      title,
+      description,
+      priority = "medium",
+      category = "task",
+      problemTemplate = "other",
+      problemDetails = [],
+    } = req.body;
     if (!title || !description) return res.status(400).json({ error: "title and description are required" });
 
     const PRIORITIES = ["low","medium","high","critical"];
@@ -76,9 +83,21 @@ const create = async (req, res) => {
     const hours = { low: 72, medium: 48, high: 24, critical: 4 }[p];
     const sla_due_at = new Date(Date.now() + hours * 60 * 60 * 1000);
 
+    const normalizedProblemDetails = Array.isArray(problemDetails)
+      ? problemDetails
+          .map((item) => ({
+            key: String(item?.key || "").trim(),
+            question: String(item?.question || "").trim(),
+            answer: String(item?.answer || "").trim(),
+          }))
+          .filter((item) => item.key && item.question && item.answer)
+      : [];
+
     const ticket = new Ticket({
       title, description, status: "open", priority: p,
       category, createdBy: req.user.id,
+      problemTemplate,
+      problemDetails: normalizedProblemDetails,
       activityLog: [{ user: req.user.id, action: "Ticket created" }],
       sla_due_at
     });
