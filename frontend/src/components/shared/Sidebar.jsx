@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/shared/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, PlusCircle, Inbox, Users as UsersIcon, LayoutDashboard, UserCog, Clock, LogOut, Menu, X, BookOpen, Settings } from 'lucide-react';
+import { Ticket, PlusCircle, Inbox, Users as UsersIcon, LayoutDashboard, UserCog, Clock, LogOut, Menu, X, BookOpen, Settings, ShieldCog } from 'lucide-react';
 
 const navConfig = {
   employee: [
@@ -16,7 +16,9 @@ const navConfig = {
   ],
   admin: [
     { label: 'Dashboard',    path: '/admin/dashboard', icon: LayoutDashboard },
-    { label: 'User Mgmt',    path: '/admin/users',     icon: UserCog },
+    { label: 'All Tickets',  path: '/admin/tickets',   icon: Inbox },
+    { label: 'Customers',    path: '/admin/customers', icon: UsersIcon },
+    { label: 'Agents',       path: '/admin/agents',    icon: ShieldCog },
     { label: 'SLA Config',   path: '/admin/sla',       icon: Clock },
   ],
 };

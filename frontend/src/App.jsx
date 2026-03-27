@@ -31,7 +31,9 @@ const TicketDetailAgent = lazy(() => import('@/views/agent/TicketDetail'));
 
 // Admin
 const Dashboard = lazy(() => import('@/views/admin/Dashboard'));
-const UserManagement = lazy(() => import('@/views/admin/UserManagement'));
+const AdminTickets = lazy(() => import('@/views/admin/AdminTickets'));
+const CustomerManagement = lazy(() => import('@/views/admin/CustomerManagement'));
+const AgentManagement = lazy(() => import('@/views/admin/AgentManagement'));
 const SLAConfig = lazy(() => import('@/views/admin/SLAConfig'));
 
 // Layout wrapper
@@ -85,7 +87,10 @@ function App() {
           {/* Admin Routes */}
           <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AppLayout /></ProtectedRoute>}>
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="users" element={<UserManagement />} />
+            <Route path="tickets" element={<AdminTickets />} />
+            <Route path="tickets/:id" element={<TicketDetailAgent />} />
+            <Route path="customers" element={<CustomerManagement />} />
+            <Route path="agents" element={<AgentManagement />} />
             <Route path="sla" element={<SLAConfig />} />
           </Route>
 
