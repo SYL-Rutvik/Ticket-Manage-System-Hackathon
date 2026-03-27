@@ -14,11 +14,33 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
   if (user) return <Navigate to={ROLE_HOME[user.role]} replace />;
 
+  const validateForm = () => {
+    const errors = {};
+    if (!email.trim()) {
+      errors.email = 'Email is required to sign in.';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = 'Please enter a valid email address.';
+    }
+    
+    if (!password) {
+      errors.password = 'Password is required to sign in.';
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters long.';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValidationErrors({});
+    if (!validateForm()) return;
+
     const u = await loginUser(email, password, signIn);
     if (u) navigate(ROLE_HOME[u.role]);
   };
@@ -69,19 +91,27 @@ const Login = () => {
               )}
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
                 <div className="relative">
                   <input 
                     type="email" 
-                    required 
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
+                    className={`w-full bg-surface border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-all ${
+                      validationErrors.email 
+                        ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-border focus:border-primary focus:ring-primary'
+                    }`} 
                     placeholder="name@example.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                   />
                 </div>
+                {validationErrors.email && (
+                  <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-red-400 text-xs mt-1.5 font-medium ml-1">
+                    {validationErrors.email}
+                  </motion.p>
+                )}
               </div>
 
               <div>
@@ -92,8 +122,11 @@ const Login = () => {
                 <div className="relative flex items-center">
                   <input 
                     type={showPassword ? 'text' : 'password'} 
-                    required 
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-12" 
+                    className={`w-full bg-surface border rounded-xl px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-1 transition-all pr-12 ${
+                      validationErrors.password 
+                        ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-border focus:border-primary focus:ring-primary'
+                    }`} 
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
@@ -106,6 +139,11 @@ const Login = () => {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {validationErrors.password && (
+                  <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-red-400 text-xs mt-1.5 font-medium ml-1">
+                    {validationErrors.password}
+                  </motion.p>
+                )}
               </div>
 
               <motion.button 
