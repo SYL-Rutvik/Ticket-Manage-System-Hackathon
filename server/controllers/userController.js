@@ -18,7 +18,8 @@ const createUser = async (req, res) => {
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) return res.status(409).json({ error: "Email already registered" });
 
-    const VALID_ROLES = ["employee", "agent", "admin"];
+    // Only allow employee and agent roles - admin cannot be created
+    const VALID_ROLES = ["employee", "agent"];
     const userRole = VALID_ROLES.includes(role) ? role : "employee";
 
     // Generate random 8 character password
@@ -38,12 +39,19 @@ const createUser = async (req, res) => {
 
 const updateRole = async (req, res) => {
   try {
-    const VALID_ROLES = ["employee", "agent", "admin"];
+    // Only allow employee and agent roles - cannot change to admin
+    const VALID_ROLES = ["employee", "agent"];
     const { role } = req.body;
     if (!VALID_ROLES.includes(role)) return res.status(400).json({ error: `role must be one of: ${VALID_ROLES.join(", ")}` });
 
-    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select("-passwordHash");
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
+    
+    // Prevent changing admin to another role (admin is protected)
+    if (user.role === "admin") return res.status(403).json({ error: "Cannot modify admin user role" });
+    
+    user.role = role;
+    await user.save();
     res.json({ id: user._id, name: user.name, email: user.email, role: user.role });
   } catch(err) { res.status(500).json({error: err.message}) }
 };

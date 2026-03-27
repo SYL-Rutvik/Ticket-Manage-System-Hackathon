@@ -83,7 +83,7 @@ const UserManagement = () => {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-4">
                       <RoleBadge role={u.role} />
-                      {u.id !== currentUser.id && (
+                      {u.id !== currentUser.id && u.role !== 'admin' && (
                         <div className="relative">
                           <ShieldCog size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                           <select 
@@ -93,9 +93,11 @@ const UserManagement = () => {
                           >
                             <option value="employee">Employee</option>
                             <option value="agent">Agent</option>
-                            <option value="admin">Admin</option>
                           </select>
                         </div>
+                      )}
+                      {u.role === 'admin' && (
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-red-500 bg-red-500/10 px-2.5 py-1.5 rounded inline-block">Protected Role</span>
                       )}
                     </div>
                   </td>
@@ -151,7 +153,6 @@ const UserManagement = () => {
                   <select className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3 text-sm text-gray-100 cursor-pointer focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
                     <option value="employee">Employee</option>
                     <option value="agent">Support Agent</option>
-                    <option value="admin">Administrator</option>
                   </select>
                 </div>
                 <div className="pt-4">
