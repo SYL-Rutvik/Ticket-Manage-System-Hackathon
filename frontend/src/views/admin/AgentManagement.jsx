@@ -93,17 +93,7 @@ const AgentManagement = () => {
                       <div className="flex items-center gap-4">
                         <RoleBadge role={u.role} />
                         {u.id !== currentUser.id && u.role !== 'admin' && (
-                          <div className="relative">
-                            <ShieldCog size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                            <select 
-                              className="form-select w-36 !pl-7 !py-1.5 !pr-8 !text-[11px] bg-elevated/50 border-border/60 hover:border-primary/50 font-bold uppercase tracking-wider text-gray-300 transition-colors"
-                              value={u.role}
-                              onChange={e => changeRole(u.id, e.target.value)}
-                            >
-                              <option value="employee">Demote to Employee</option>
-                              <option value="agent">Agent</option>
-                            </select>
-                          </div>
+                          <span className="text-[10px] uppercase font-bold tracking-widest text-amber-400 bg-amber-500/10 px-2.5 py-1.5 rounded inline-block">Agent Only</span>
                         )}
                         {u.role === 'admin' && (
                           <span className="text-[10px] uppercase font-bold tracking-widest text-red-500 bg-red-500/10 px-2.5 py-1.5 rounded inline-block">Protected Role</span>

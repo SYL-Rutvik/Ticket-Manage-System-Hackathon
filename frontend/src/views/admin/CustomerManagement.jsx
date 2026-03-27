@@ -13,7 +13,7 @@ const CustomerManagement = () => {
   const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '', role: 'employee' });
 
-  // Filter only customers
+  // Filter only employees
   const customers = users.filter(u => u.role === 'employee');
 
   const handleCreateCustomer = async (e) => {
@@ -21,7 +21,7 @@ const CustomerManagement = () => {
     setFormError('');
     const success = await addUser({ ...formData, role: 'employee' });
     if (!success) {
-      setFormError('Failed to create customer. Email may already be registered.');
+      setFormError('Failed to create employee. Email may already be registered.');
     } else {
       setIsModalOpen(false);
       setFormData({ name: '', email: '', role: 'employee' });
@@ -40,7 +40,7 @@ const CustomerManagement = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="page-header mb-0">
-          <h1 className="page-title">Customer Management</h1>
+          <h1 className="page-title">Employee Management</h1>
           <p className="page-sub">Provision and manage end-user employee accounts</p>
         </div>
         <motion.button 
@@ -48,14 +48,14 @@ const CustomerManagement = () => {
           onClick={() => setIsModalOpen(true)}
           className="bg-primary hover:bg-primary-light text-white px-5 py-2.5 rounded-xl font-bold text-sm tracking-wide flex items-center gap-2 shadow-lg shadow-primary/20 transition-all"
         >
-          <Plus size={18} /> Add New Customer
+          <Plus size={18} /> Add New Employee
         </motion.button>
       </div>
 
       <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-xl">
         <div className="px-6 py-4 flex items-center gap-2 border-b border-border bg-elevated/30">
           <Users size={16} className="text-gray-400" />
-          <h3 className="text-xs font-bold text-gray-300 uppercase tracking-widest">Active Customers ({customers.length})</h3>
+          <h3 className="text-xs font-bold text-gray-300 uppercase tracking-widest">Active Employees ({customers.length})</h3>
         </div>
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-elevated/50 border-b border-border/50">
@@ -70,7 +70,7 @@ const CustomerManagement = () => {
             {customers.length === 0 ? (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-gray-500 font-medium tracking-wide">
-                  No customers found. Click 'Add New Customer' to provision one.
+                  No employees found. Click 'Add New Employee' to provision one.
                 </td>
               </tr>
             ) : (
@@ -96,7 +96,7 @@ const CustomerManagement = () => {
                       {u.id !== currentUser.id && (
                         <motion.button 
                           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                          onClick={() => { if(window.confirm(`Permanently delete customer ${u.name}?`)) removeUser(u.id); }} 
+                          onClick={() => { if(window.confirm(`Permanently delete employee ${u.name}?`)) removeUser(u.id); }} 
                           className="btn btn-danger !py-1.5 !px-3 text-xs flex items-center justify-end gap-1.5 ml-auto opacity-70 hover:opacity-100"
                         >
                           <Trash2 size={14} /> Remove
@@ -111,7 +111,7 @@ const CustomerManagement = () => {
         </table>
       </div>
 
-      {/* Add Customer Modal */}
+      {/* Add Employee Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -119,8 +119,8 @@ const CustomerManagement = () => {
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative bg-surface border border-border/80 p-8 rounded-3xl shadow-2xl w-full max-w-md z-10 overflow-hidden">
               <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors bg-elevated/50 p-1.5 rounded-full"><X size={18} /></button>
               
-              <h2 className="text-xl font-extrabold text-white mb-2">Provision Customer</h2>
-              <p className="text-sm font-medium text-gray-400 mb-6 flex-1 pr-6">Create a new customer account. Login credentials will be automatically emailed.</p>
+              <h2 className="text-xl font-extrabold text-white mb-2">Provision Employee</h2>
+              <p className="text-sm font-medium text-gray-400 mb-6 flex-1 pr-6">Create a new employee account. Login credentials will be automatically emailed.</p>
               
               {formError && (
                 <div className="mb-6 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-bold flex gap-2 items-start"><AlertCircle size={16} className="shrink-0 mt-0.5" /> <p>{formError}</p></div>
@@ -140,7 +140,7 @@ const CustomerManagement = () => {
                 </div>
                 <div className="pt-4">
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary-light text-white rounded-xl py-3.5 text-sm font-bold tracking-wide transition-all shadow-[0_4px_14px_0_rgba(79,70,229,0.25)] disabled:opacity-50 flex items-center justify-center gap-2">
-                    {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <><Mail size={16}/> Provision Customer Account</>}
+                    {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <><Mail size={16}/> Provision Employee Account</>}
                   </motion.button>
                 </div>
               </form>

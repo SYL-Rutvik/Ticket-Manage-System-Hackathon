@@ -89,6 +89,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="tickets" element={<AdminTickets />} />
             <Route path="tickets/:id" element={<TicketDetailAgent />} />
+            <Route path="employees" element={<CustomerManagement />} />
             <Route path="customers" element={<CustomerManagement />} />
             <Route path="agents" element={<AgentManagement />} />
             <Route path="sla" element={<SLAConfig />} />

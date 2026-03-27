@@ -17,7 +17,7 @@ const navConfig = {
   admin: [
     { label: 'Dashboard',    path: '/admin/dashboard', icon: LayoutDashboard },
     { label: 'All Tickets',  path: '/admin/tickets',   icon: Inbox },
-    { label: 'Customers',    path: '/admin/customers', icon: UsersIcon },
+    { label: 'Employees',    path: '/admin/employees', icon: UsersIcon },
     { label: 'Agents',       path: '/admin/agents',    icon: ShieldCog },
     { label: 'SLA Config',   path: '/admin/sla',       icon: Clock },
   ],
