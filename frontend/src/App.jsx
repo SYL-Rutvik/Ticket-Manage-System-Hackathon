@@ -21,6 +21,8 @@ const Register = lazy(() => import('@/views/shared/Register'));
 const MyTickets = lazy(() => import('@/views/employee/MyTickets'));
 const CreateTicket = lazy(() => import('@/views/employee/CreateTicket'));
 const TicketDetailEmployee = lazy(() => import('@/views/employee/TicketDetail'));
+const KnowledgeBase = lazy(() => import('@/views/employee/KnowledgeBase'));
+const Profile = lazy(() => import('@/views/employee/Profile'));
 
 // Agent
 const TicketQueue = lazy(() => import('@/views/agent/TicketQueue'));
@@ -69,6 +71,8 @@ function App() {
             <Route path="tickets" element={<MyTickets />} />
             <Route path="tickets/create" element={<CreateTicket />} />
             <Route path="tickets/:id" element={<TicketDetailEmployee />} />
+            <Route path="kb" element={<KnowledgeBase />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
 
           {/* Agent Routes */}

@@ -16,7 +16,7 @@ export const PRIORITY = {
   LOW:      'low',
 };
 
-export const CATEGORY = ['bug', 'feature', 'task', 'support'];
+export const CATEGORY = ['software', 'hardware', 'network', 'access', 'other'];
 
 // Role default redirect after login
 export const ROLE_HOME = {

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { getUsers, updateRole, deleteUser } from '@/services/admin/userService';
+import { getUsers, updateRole, deleteUser, createUser } from '@/services/admin/userService';
 import { getStats } from '@/services/shared/ticketService';
 import { getSLAConfig, updateSLAConfig } from '@/services/admin/slaService';
 import { getAuditLog } from '@/services/agent/auditService';
@@ -17,6 +17,20 @@ export const useAdminController = () => {
     try   { const d = await getUsers();     setUsers(d.users); }
     catch (e) { setError(e.message); }
     finally   { setLoading(false); }
+  }, []);
+
+  const addUser = useCallback(async (userData) => {
+    setLoading(true);
+    try {
+      const d = await createUser(userData);
+      setUsers(prev => [...prev, d]);
+      return true;
+    } catch (e) { 
+      setError(e.message);
+      return false; 
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const fetchStats = useCallback(async () => {
@@ -49,5 +63,5 @@ export const useAdminController = () => {
     setSla(d);
   }, []);
 
-  return { users, stats, sla, auditLogs, loading, error, fetchUsers, fetchStats, fetchSLA, fetchAudit, changeRole, removeUser, saveSLA };
+  return { users, stats, sla, auditLogs, loading, error, fetchUsers, addUser, fetchStats, fetchSLA, fetchAudit, changeRole, removeUser, saveSLA };
 };

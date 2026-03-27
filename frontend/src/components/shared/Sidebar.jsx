@@ -98,12 +98,21 @@ const Sidebar = () => {
           );
         })}
         
-        {/* Placeholder functionality for bottom options */}
+        {/* Options */}
         <div className="pt-6 mt-6 border-t border-border/50">
           <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest px-3 mb-4">Options</p>
-          <button className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-semibold text-gray-400 hover:text-gray-100 hover:bg-elevated/70 transition-all duration-200 text-left">
-            <Settings size={18} /> Profile Settings
-          </button>
+          <NavLink
+            to="/employee/profile"
+            className={({ isActive }) =>
+              `w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 text-left ${
+                isActive
+                  ? 'bg-primary/20 text-primary-light border-l-4 border-primary'
+                  : 'text-gray-400 hover:text-gray-100 hover:bg-elevated/70'
+              }`
+            }
+          >
+            <Settings size={18} className="transition-opacity" /> Profile Settings
+          </NavLink>
         </div>
       </nav>
 

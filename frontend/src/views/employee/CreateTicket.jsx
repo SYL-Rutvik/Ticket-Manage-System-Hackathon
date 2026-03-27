@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Send, X, AlertCircle, Timer, HelpCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, X, AlertCircle, Timer, HelpCircle, ChevronDown } from 'lucide-react';
 import { useTicketController } from '@/hooks/shared/useTickets';
 import { CATEGORY, PRIORITY } from '@/shared/utils/constants';
 
@@ -19,6 +19,19 @@ const CreateTicket = () => {
   
   const [templateId, setTemplateId] = useState('');
   const [form, setForm] = useState({ title: '', description: '', category: CATEGORY[0], priority: PRIORITY.MEDIUM });
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsCategoryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Update form state when template changes
   useEffect(() => {
@@ -28,7 +41,7 @@ const CreateTicket = () => {
         setForm(prev => ({ 
           ...prev, 
           priority: tmpl.priority,
-          title: tmpl.id === 'other' ? '' : prev.title || tmpl.title // don't override custom if selecting other
+          title: tmpl.id === 'other' ? '' : prev.title || tmpl.title
         }));
       }
     }
@@ -38,7 +51,6 @@ const CreateTicket = () => {
     e.preventDefault();
     const tmpl = PROBLEM_TEMPLATES.find(t => t.id === templateId);
     
-    // Auto title if preset
     const finalTitle = tmpl && tmpl.id !== 'other' ? tmpl.title : form.title;
     
     const newTicket = await create({ ...form, title: finalTitle });
@@ -67,7 +79,6 @@ const CreateTicket = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
-          {/* Step 1: Predefined Problem selection */}
           <div className="space-y-4">
              <label className="flex items-center gap-2 text-sm font-extrabold text-gray-300 uppercase tracking-widest"><HelpCircle size={16} className="text-primary"/> 1. What is the issue?</label>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -108,7 +119,6 @@ const CreateTicket = () => {
             animate={{ opacity: templateId ? 1 : 0.5, pointerEvents: templateId ? 'auto' : 'none' }}
             className="space-y-8 pt-6 border-t border-border/50"
           >
-            {/* Conditional Title Input if "Other" */}
             {templateId === 'other' && (
               <div>
                 <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Custom Issue Title</label>
@@ -123,16 +133,45 @@ const CreateTicket = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
+              <div className="relative" ref={dropdownRef}>
                 <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Category</label>
-                <select 
-                  className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3.5 text-base text-gray-100 focus:outline-none focus:border-primary cursor-pointer appearance-none" 
-                  value={form.category} 
-                  onChange={e => setForm({...form, category: e.target.value})}
+                <button 
+                  type="button"
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3.5 flex items-center justify-between text-base text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all capitalize"
                 >
-                  {CATEGORY.map(c => <option key={c} value={c} className="capitalize">{c}</option>)}
-                </select>
+                  {form.category}
+                  <ChevronDown size={18} className={`text-gray-400 transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                <AnimatePresence>
+                  {isCategoryOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute left-0 right-0 mt-2 bg-surface border border-border/80 rounded-xl shadow-2xl z-20 py-1 overflow-hidden"
+                    >
+                      {CATEGORY.map(c => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => {
+                            setForm({ ...form, category: c });
+                            setIsCategoryOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 text-sm font-semibold capitalize transition-colors ${
+                            form.category === c ? 'bg-primary/20 text-primary-light' : 'text-gray-300 hover:bg-elevated hover:text-white'
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+
               <div>
                 <div className="flex justify-between items-end mb-2">
                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide">Calculated Priority</label>
