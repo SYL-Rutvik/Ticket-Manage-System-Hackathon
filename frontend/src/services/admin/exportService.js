@@ -1,6 +1,5 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 
 const PERIOD_CONFIG = {
   monthly: { label: 'Monthly' },
@@ -165,44 +164,4 @@ export const exportTicketsReportPDF = ({ period, tickets, stats }) => {
   });
 
   doc.save(getFilename(period, 'pdf'));
-};
-
-export const exportTicketsReportExcel = ({ period, tickets, stats }) => {
-  const model = getExportModel(period, tickets, stats);
-
-  const summarySheetData = [
-    { Metric: 'Report Period', Value: model.periodLabel },
-    { Metric: 'Generated At', Value: model.generatedAt.toLocaleString() },
-    { Metric: 'Exported Ticket Rows', Value: model.periodTickets.length },
-    { Metric: 'Total Tickets', Value: model.summary.total },
-    { Metric: 'Open', Value: model.summary.open },
-    { Metric: 'In Progress', Value: model.summary.inProgress },
-    { Metric: 'Resolved', Value: model.summary.resolved },
-    { Metric: 'Closed', Value: model.summary.closed },
-    { Metric: 'SLA Breached', Value: model.summary.slaBreached },
-    { Metric: 'Priority Low', Value: model.summary.byPriority.low },
-    { Metric: 'Priority Medium', Value: model.summary.byPriority.medium },
-    { Metric: 'Priority High', Value: model.summary.byPriority.high },
-    { Metric: 'Priority Critical', Value: model.summary.byPriority.critical },
-  ];
-
-  const ticketSheetData = model.periodTickets.map((ticket) => ({
-    ticketId: ticket.id || ticket._id || '-',
-    title: ticket.title || '-',
-    status: ticket.status || '-',
-    priority: ticket.priority || '-',
-    createdBy: getTicketDisplayValue(ticket, 'createdBy'),
-    assignedTo: getTicketDisplayValue(ticket, 'assignedTo'),
-    createdAt: getTicketDisplayValue(ticket, 'createdAt'),
-    category: ticket.category || '-',
-  }));
-
-  const workbook = XLSX.utils.book_new();
-  const summarySheet = XLSX.utils.json_to_sheet(summarySheetData);
-  const ticketsSheet = XLSX.utils.json_to_sheet(ticketSheetData);
-
-  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
-  XLSX.utils.book_append_sheet(workbook, ticketsSheet, 'Tickets');
-
-  XLSX.writeFile(workbook, getFilename(period, 'xlsx'));
 };

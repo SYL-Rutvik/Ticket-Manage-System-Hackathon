@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, Flame, AlertCircle, CheckCircle2, Activity, Users, TrendingUp, Zap, BarChart3, FileText, FileSpreadsheet } from 'lucide-react';
+import { Ticket, Flame, AlertCircle, CheckCircle2, Activity, Users, TrendingUp, Zap, BarChart3, FileText } from 'lucide-react';
 import { useAdminController } from '@/hooks/admin/useAdmin';
 import { useTicketController } from '@/hooks/shared/useTickets';
 import { StatusBadge, PriorityBadge } from '@/components/shared/Badge';
 import { formatDateTime } from '@/shared/utils/formatDate';
-import { exportTicketsReportPDF, exportTicketsReportExcel } from '@/services/admin/exportService';
+import { exportTicketsReportPDF } from '@/services/admin/exportService';
 
 const Dashboard = () => {
   const { stats, loading, error, fetchStats } = useAdminController();
@@ -18,16 +18,12 @@ const Dashboard = () => {
     fetchAll({ limit: 10000, skip: 0 });
   }, [fetchStats, fetchAll]);
 
-  const handleExport = async (period, format) => {
-    const key = `${period}-${format}`;
+  const handleExport = async (period) => {
+    const key = `${period}-pdf`;
     setExportingKey(key);
 
     try {
-      if (format === 'pdf') {
-        exportTicketsReportPDF({ period, tickets, stats });
-      } else {
-        exportTicketsReportExcel({ period, tickets, stats });
-      }
+      exportTicketsReportPDF({ period, tickets, stats });
     } catch (e) {
       window.alert(`Export failed: ${e.message}`);
     } finally {
@@ -51,10 +47,8 @@ const Dashboard = () => {
   ];
 
   const exportActions = [
-    { key: 'monthly-pdf', label: 'Monthly PDF', period: 'monthly', format: 'pdf', icon: FileText },
-    { key: 'monthly-xlsx', label: 'Monthly Excel', period: 'monthly', format: 'xlsx', icon: FileSpreadsheet },
-    { key: 'all-time-pdf', label: 'All-Time PDF', period: 'all-time', format: 'pdf', icon: FileText },
-    { key: 'all-time-xlsx', label: 'All-Time Excel', period: 'all-time', format: 'xlsx', icon: FileSpreadsheet },
+    { key: 'monthly-pdf', label: 'Monthly PDF', period: 'monthly', icon: FileText },
+    { key: 'all-time-pdf', label: 'All-Time PDF', period: 'all-time', icon: FileText },
   ];
 
   return (
@@ -70,7 +64,7 @@ const Dashboard = () => {
             return (
               <button
                 key={action.key}
-                onClick={() => handleExport(action.period, action.format)}
+                onClick={() => handleExport(action.period)}
                 disabled={isExporting || tickets.length === 0}
                 className="inline-flex items-center gap-2 rounded-lg border border-border bg-elevated px-3 py-2 text-xs font-semibold tracking-wide text-gray-200 transition hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
