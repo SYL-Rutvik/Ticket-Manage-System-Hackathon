@@ -11,23 +11,27 @@ const MyTickets = () => {
   useEffect(() => { fetchMine(); }, [fetchMine]);
 
   if (loading) return (
-    <div className="p-12 flex justify-center">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-[50vh] flex justify-center items-center">
+      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-lg shadow-primary/20" />
     </div>
   );
-  if (error) return <div className="p-8 text-center text-red-500 font-medium">Failed to load tickets: {error}</div>;
+  if (error) return (
+    <div className="p-8 mt-10 text-center bg-red-500/10 border border-red-500/20 rounded-2xl max-w-lg mx-auto">
+      <p className="text-red-400 font-bold">{error}</p>
+    </div>
+  );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-10">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-12 max-w-5xl mx-auto">
       
-      <div className="flex items-center justify-between page-header">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">My Tickets</h1>
-          <p className="text-sm text-gray-400 mt-1">Track and manage your requests</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">My Tickets</h1>
+          <p className="text-sm font-medium text-gray-400 mt-1">Track and manage your requests</p>
         </div>
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Link to="/employee/tickets/create" className="btn btn-primary shadow-lg shadow-primary/20">
-            <PlusCircle size={18} /> New Ticket
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
+          <Link to="/employee/tickets/create" className="btn bg-primary hover:bg-primary-light text-white w-full sm:w-auto justify-center px-6 py-3 rounded-xl shadow-[0_4px_14px_0_rgba(79,70,229,0.25)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.30)] font-bold tracking-wide transition-all text-sm">
+            <PlusCircle size={18} className="mr-2" /> New Support Ticket
           </Link>
         </motion.div>
       </div>
@@ -37,11 +41,16 @@ const MyTickets = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="empty-state bg-surface/50 border border-border border-dashed rounded-2xl"
+            className="flex flex-col items-center justify-center p-12 bg-surface/40 border border-border/60 border-dashed rounded-3xl mt-4"
           >
-            <TicketIcon size={48} className="mx-auto text-gray-600 mb-4 stroke-1" />
-            <h3 className="text-lg font-semibold text-gray-200">No tickets found</h3>
-            <p className="text-sm text-gray-500 mt-1">You haven't submitted any support requests yet.</p>
+            <div className="w-20 h-20 bg-elevated rounded-full flex items-center justify-center mb-6 shadow-inner">
+              <TicketIcon size={32} className="text-gray-500 stroke-[1.5px]" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">No tickets yet</h3>
+            <p className="text-sm text-gray-400 text-center max-w-md mb-8 leading-relaxed font-medium">When you submit requests or report issues, you'll be able to track their status and updates here.</p>
+            <Link to="/employee/tickets/create" className="text-primary font-bold hover:text-primary-light transition-colors flex items-center gap-2">
+              Create your first ticket <PlusCircle size={16} />
+            </Link>
           </motion.div>
         ) : (
           <motion.div 

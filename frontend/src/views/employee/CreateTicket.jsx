@@ -1,18 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, X, AlertCircle, Timer } from 'lucide-react';
+import { Send, X, AlertCircle, Timer, HelpCircle } from 'lucide-react';
 import { useTicketController } from '@/hooks/shared/useTickets';
 import { CATEGORY, PRIORITY } from '@/shared/utils/constants';
+
+const PROBLEM_TEMPLATES = [
+  { id: 'auth', label: 'Cannot login / Authentication Issue', priority: PRIORITY.HIGH, title: 'Authentication Issue' },
+  { id: 'down', label: 'System completely unavailable', priority: PRIORITY.CRITICAL, title: 'System Outage' },
+  { id: 'bug',  label: 'Found a software bug or error page', priority: PRIORITY.MEDIUM, title: 'Software Bug' },
+  { id: 'req',  label: 'Access / Hardware Request', priority: PRIORITY.LOW, title: 'Access Request' },
+  { id: 'other',label: 'Other / Custom Issue', priority: PRIORITY.MEDIUM, title: '' },
+];
 
 const CreateTicket = () => {
   const navigate = useNavigate();
   const { create, error, loading } = useTicketController();
+  
+  const [templateId, setTemplateId] = useState('');
   const [form, setForm] = useState({ title: '', description: '', category: CATEGORY[0], priority: PRIORITY.MEDIUM });
+
+  // Update form state when template changes
+  useEffect(() => {
+    if (templateId) {
+      const tmpl = PROBLEM_TEMPLATES.find(t => t.id === templateId);
+      if (tmpl) {
+        setForm(prev => ({ 
+          ...prev, 
+          priority: tmpl.priority,
+          title: tmpl.id === 'other' ? '' : prev.title || tmpl.title // don't override custom if selecting other
+        }));
+      }
+    }
+  }, [templateId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newTicket = await create(form);
+    const tmpl = PROBLEM_TEMPLATES.find(t => t.id === templateId);
+    
+    // Auto title if preset
+    const finalTitle = tmpl && tmpl.id !== 'other' ? tmpl.title : form.title;
+    
+    const newTicket = await create({ ...form, title: finalTitle });
     if (newTicket) navigate(`/employee/tickets/${newTicket.id}`);
   };
 
@@ -21,69 +50,139 @@ const CreateTicket = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="max-w-3xl mx-auto pb-10"
+      className="max-w-4xl mx-auto pb-10"
     >
-      <div className="page-header">
-        <h1 className="page-title text-2xl font-bold">Create New Ticket</h1>
-        <p className="page-sub text-gray-400 mt-1">Please provide as much detail as possible to help us resolve it quickly.</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-white tracking-tight">Create Support Ticket</h1>
+        <p className="text-gray-400 mt-2 font-medium">Select your problem below and provide details to help our team assist you quickly.</p>
       </div>
 
-      <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 shadow-xl">
+      <div className="bg-surface/50 border border-border/60 rounded-3xl p-6 md:p-10 shadow-2xl">
         {error && (
-          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium flex gap-3 items-start overflow-hidden">
+          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-bold flex gap-3 items-start overflow-hidden">
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <p>{error}</p>
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-7">
-          <div>
-            <label className="form-label text-xs tracking-widest text-gray-500 mb-2">Title / Summary</label>
-            <input 
-              required className="form-input focus:ring-primary/20 text-base py-2.5" 
-              placeholder="E.g., Cannot access billing dashboard"
-              value={form.title} onChange={e => setForm({...form, title: e.target.value})} 
-            />
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Step 1: Predefined Problem selection */}
+          <div className="space-y-4">
+             <label className="flex items-center gap-2 text-sm font-extrabold text-gray-300 uppercase tracking-widest"><HelpCircle size={16} className="text-primary"/> 1. What is the issue?</label>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+               {PROBLEM_TEMPLATES.map(tmpl => {
+                 const isSelected = templateId === tmpl.id;
+                 return (
+                   <button 
+                     key={tmpl.id}
+                     type="button"
+                     onClick={() => setTemplateId(tmpl.id)}
+                     className={`text-left p-4 rounded-xl border transition-all duration-200 ${
+                       isSelected 
+                         ? 'bg-primary/10 border-primary ring-1 ring-primary/50' 
+                         : 'bg-elevated/40 border-border/80 hover:bg-elevated hover:border-border'
+                     }`}
+                   >
+                     <div className="flex justify-between items-start">
+                       <span className={`font-bold ${isSelected ? 'text-white' : 'text-gray-300'}`}>{tmpl.label}</span>
+                       {tmpl.id !== 'other' && (
+                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider border ${
+                           tmpl.priority === PRIORITY.CRITICAL ? 'text-red-400 bg-red-500/10 border-red-500/20' :
+                           tmpl.priority === PRIORITY.HIGH ? 'text-orange-400 bg-orange-500/10 border-orange-500/20' :
+                           tmpl.priority === PRIORITY.MEDIUM ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
+                           'text-gray-400 bg-gray-500/10 border-gray-500/20'
+                         }`}>
+                           {tmpl.priority}
+                         </span>
+                       )}
+                     </div>
+                   </button>
+                 );
+               })}
+             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="form-label text-xs tracking-widest text-gray-500 mb-2">Category</label>
-              <select className="form-select text-base py-2.5" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
-                {CATEGORY.map(c => <option key={c} value={c} className="capitalize">{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <div className="flex justify-between items-end mb-2">
-                 <label className="form-label text-xs tracking-widest text-gray-500 mb-0">Priority</label>
-                 {form.priority === PRIORITY.CRITICAL && <span className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20"><Timer size={10}/> ~4h SLA</span>}
-                 {form.priority === PRIORITY.HIGH && <span className="text-[10px] font-bold text-orange-500 uppercase flex items-center gap-1 bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20"><Timer size={10}/> ~24h SLA</span>}
-                 {form.priority === PRIORITY.MEDIUM && <span className="text-[10px] font-bold text-amber-500 uppercase flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20"><Timer size={10}/> ~48h SLA</span>}
-                 {form.priority === PRIORITY.LOW && <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1 bg-gray-500/10 px-1.5 py-0.5 rounded border border-gray-500/20"><Timer size={10}/> ~72h SLA</span>}
+          <motion.div 
+            initial={false}
+            animate={{ opacity: templateId ? 1 : 0.5, pointerEvents: templateId ? 'auto' : 'none' }}
+            className="space-y-8 pt-6 border-t border-border/50"
+          >
+            {/* Conditional Title Input if "Other" */}
+            {templateId === 'other' && (
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Custom Issue Title</label>
+                <input 
+                  required 
+                  className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3.5 text-base text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
+                  placeholder="E.g., Missing files in shared drive"
+                  value={form.title} 
+                  onChange={e => setForm({...form, title: e.target.value})} 
+                />
               </div>
-              <select className="form-select text-base py-2.5 w-full" value={form.priority} onChange={e => setForm({...form, priority: e.target.value})}>
-                {Object.values(PRIORITY).map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
-              </select>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Category</label>
+                <select 
+                  className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-3.5 text-base text-gray-100 focus:outline-none focus:border-primary cursor-pointer appearance-none" 
+                  value={form.category} 
+                  onChange={e => setForm({...form, category: e.target.value})}
+                >
+                  {CATEGORY.map(c => <option key={c} value={c} className="capitalize">{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <div className="flex justify-between items-end mb-2">
+                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide">Calculated Priority</label>
+                </div>
+                <div className="w-full bg-base/50 border border-border/50 rounded-xl px-4 py-3.5 flex items-center gap-3">
+                  <span className={`text-xs font-bold px-2 py-1 rounded truncate uppercase tracking-widest border flex items-center gap-1.5 ${
+                           form.priority === PRIORITY.CRITICAL ? 'text-red-400 bg-red-500/10 border-red-500/20' :
+                           form.priority === PRIORITY.HIGH ? 'text-orange-400 bg-orange-500/10 border-orange-500/20' :
+                           form.priority === PRIORITY.MEDIUM ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
+                           'text-gray-400 bg-gray-500/10 border-gray-500/20'
+                         }`}>
+                    <Timer size={14}/> {form.priority} SLA
+                  </span>
+                  <span className="text-[11px] text-gray-500 italic">(Locked by template)</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="form-label text-xs tracking-widest text-gray-500 mb-2">Detailed Description</label>
-            <textarea 
-              required className="form-textarea min-h-[200px] text-base leading-relaxed" 
-              placeholder="1. What steps were you taking?&#10;2. What did you expect to happen?&#10;3. What actually happened?"
-              value={form.description} onChange={e => setForm({...form, description: e.target.value})} 
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Detailed Description</label>
+              <textarea 
+                required 
+                className="w-full bg-elevated/40 border border-border/80 rounded-xl px-4 py-4 text-base text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all min-h-[200px] leading-relaxed resize-y" 
+                placeholder="1. What steps were you taking?&#10;2. What did you expect to happen?&#10;3. What actually happened?"
+                value={form.description} 
+                onChange={e => setForm({...form, description: e.target.value})} 
+              />
+            </div>
 
-          <div className="flex justify-end gap-4 pt-6 border-t border-border">
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="button" onClick={() => navigate(-1)} className="btn btn-secondary px-6">
-              <X size={16} /> Cancel
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" className="btn btn-primary px-8 shadow-lg shadow-primary/20" disabled={loading}>
-              <Send size={16} /> {loading ? 'Submitting...' : 'Submit Ticket'}
-            </motion.button>
-          </div>
+            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-6">
+              <motion.button 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }} 
+                type="button" 
+                onClick={() => navigate(-1)} 
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-gray-300 bg-elevated border border-border hover:bg-hover hover:text-white transition-all text-sm"
+              >
+                Cancel
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }} 
+                type="submit" 
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary-light text-white rounded-xl px-8 py-3.5 text-sm font-bold tracking-wide transition-all shadow-[0_4px_14px_0_rgba(79,70,229,0.25)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.30)] disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled={loading || !templateId}
+              >
+                <Send size={18} /> {loading ? 'Submitting...' : 'Submit Support Ticket'}
+              </motion.button>
+            </div>
+          </motion.div>
         </form>
       </div>
     </motion.div>

@@ -34,10 +34,10 @@ const SLAConfig = lazy(() => import('@/views/admin/SLAConfig'));
 
 // Layout wrapper
 const AppLayout = () => (
-  <div className="app-layout">
+  <div className="flex min-h-screen bg-base w-full">
     <Sidebar />
-    <main className="main-content">
-      <div className="max-w-6xl mx-auto w-full">
+    <main className="flex-1 w-full lg:ml-64 min-w-0 transition-all duration-300">
+      <div className="max-w-6xl mx-auto w-full p-4 md:p-8 pt-20 lg:pt-8 min-h-screen flex flex-col">
         <Suspense fallback={<PageSkeleton />}>
           <Outlet />
         </Suspense>
