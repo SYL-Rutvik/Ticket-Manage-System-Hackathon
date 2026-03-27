@@ -1,17 +1,36 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Inbox, Search, LayoutList, Eye, UserPlus } from 'lucide-react';
+import { Inbox, Search, LayoutList, Eye, UserPlus, WifiOff, AlertTriangle } from 'lucide-react';
 import { useTicketController } from '@/hooks/shared/useTickets';
 import { useAuth } from '@/shared/context/AuthContext';
 import { STATUS, PRIORITY } from '@/shared/utils/constants';
 
+
 const TicketQueue = () => {
   const { user } = useAuth();
   const { tickets, loading, error, fetchAll, assign } = useTicketController();
-  
+
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const [search, setSearch] = useState('');
+
+  // Read the agent's online status from sessionStorage
+  // (Sidebar writes it there so TicketQueue can read it without prop-drilling)
+  const [isOnline, setIsOnline] = useState(() => {
+    const stored = sessionStorage.getItem('agentIsOnline');
+    return stored === null ? true : stored === 'true';
+  });
+
+  // Keep in sync if sidebar toggles while queue is mounted
+  useEffect(() => {
+    const handler = () => {
+      const stored = sessionStorage.getItem('agentIsOnline');
+      setIsOnline(stored === null ? true : stored === 'true');
+    };
+    window.addEventListener('agentAvailabilityChanged', handler);
+    return () => window.removeEventListener('agentAvailabilityChanged', handler);
+  }, []);
+
 
   useEffect(() => {
     const params = {};
@@ -29,17 +48,33 @@ const TicketQueue = () => {
         <p className="page-sub">Triage and assign employee requests</p>
       </div>
 
+      {/* ── Offline Banner ── */}
+      <AnimatePresence>
+        {!isOnline && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="flex items-start gap-3 mb-6 px-5 py-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl"
+          >
+            <WifiOff size={20} className="text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-amber-300 font-bold text-sm">You are currently Offline</p>
+              <p className="text-amber-400/70 text-xs mt-0.5">Toggle yourself Online in the sidebar to start claiming and receiving new tickets.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Filters */}
       <div className="bg-surface border border-border rounded-xl p-4 flex flex-wrap gap-4 items-end mb-8 shadow-sm">
         <div className="flex-1 min-w-[240px] relative">
           <label className="form-label text-xs tracking-widest text-gray-500 mb-1.5">Search Tickets</label>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <input 
-              type="text" 
-              className="form-input pl-9" 
-              placeholder="Search by title..." 
-              value={search} onChange={e => setSearch(e.target.value)} 
+            <input
+              type="text"
+              className="form-input pl-9"
+              placeholder="Search by title..."
+              value={search} onChange={e => setSearch(e.target.value)}
             />
           </div>
         </div>
@@ -62,9 +97,9 @@ const TicketQueue = () => {
       {error ? (
         <div className="p-8 text-center text-red-500 font-medium">{error}</div>
       ) : loading && tickets.length === 0 ? (
-         <div className="p-12 flex justify-center">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-         </div>
+        <div className="p-12 flex justify-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
       ) : tickets.length === 0 ? (
         <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="empty-state bg-surface/50 border border-border border-dashed rounded-2xl">
           <Inbox size={48} className="mx-auto text-gray-600 mb-4 stroke-1" />
@@ -87,7 +122,7 @@ const TicketQueue = () => {
             <tbody className="divide-y divide-border/50">
               <AnimatePresence>
                 {tickets.map((t, i) => (
-                  <motion.tr 
+                  <motion.tr
                     key={t.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -104,7 +139,7 @@ const TicketQueue = () => {
                     <td className="py-4 px-4"><span className="capitalize text-[11px] font-bold tracking-wider px-2 py-1 rounded bg-surface border border-border text-gray-300 shadow-sm">{t.priority}</span></td>
                     <td className="py-4 px-4">
                       {t.assignedTo ? (
-                        <span className="text-gray-400 text-[13px] font-medium flex items-center gap-1.5"><LayoutList size={14}/> {typeof t.assignedTo === 'object' ? t.assignedTo?.name : t.assignedTo}</span>
+                        <span className="text-gray-400 text-[13px] font-medium flex items-center gap-1.5"><LayoutList size={14} /> {typeof t.assignedTo === 'object' ? t.assignedTo?.name : t.assignedTo}</span>
                       ) : (
                         <span className="text-amber-500 text-[10px] font-bold uppercase tracking-widest bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20 shadow-sm">Unassigned</span>
                       )}
@@ -112,17 +147,26 @@ const TicketQueue = () => {
                     <td className="py-4 px-4">
                       <div className="flex justify-end gap-2">
                         <a href={`/agent/tickets/${t.id}`} className="btn btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1.5">
-                          <Eye size={14}/> View
+                          <Eye size={14} /> View
                         </a>
                         {!t.assignedTo && (
-                          <motion.button 
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => assign(t.id, user.id)} 
-                            className="btn btn-primary !py-1.5 !px-3 text-xs flex items-center gap-1.5 shadow-md shadow-primary/20"
-                          >
-                            <UserPlus size={14}/> Claim
-                          </motion.button>
+                          isOnline ? (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => assign(t.id, user.id)}
+                              className="btn btn-primary !py-1.5 !px-3 text-xs flex items-center gap-1.5 shadow-md shadow-primary/20"
+                            >
+                              <UserPlus size={14} /> Claim
+                            </motion.button>
+                          ) : (
+                            <span
+                              title="Go Online to claim tickets"
+                              className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 bg-gray-700/30 border border-gray-600/40 px-2.5 py-1.5 rounded-lg cursor-not-allowed"
+                            >
+                              <WifiOff size={12} /> Offline
+                            </span>
+                          )
                         )}
                       </div>
                     </td>

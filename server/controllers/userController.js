@@ -5,10 +5,14 @@ const { sendCredentials } = require("../utils/emailService");
 const getAll = async (req, res) => {
   try {
     const users = await User.find().select("-passwordHash");
-    const mappedUsers = users.map(u => ({ id: u._id, name: u.name, email: u.email, role: u.role, createdAt: u.createdAt }));
+    const mappedUsers = users.map(u => ({
+      id: u._id, name: u.name, email: u.email,
+      role: u.role, isAvailable: u.isAvailable, createdAt: u.createdAt
+    }));
     res.json({ count: users.length, users: mappedUsers });
-  } catch(err) { res.status(500).json({error: err.message}) }
+  } catch (err) { res.status(500).json({ error: err.message }) }
 };
+
 
 const createUser = async (req, res) => {
   try {
@@ -25,7 +29,7 @@ const createUser = async (req, res) => {
     // Generate random 8 character password
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let rawPassword = '';
-    for(let i=0; i<8; i++) rawPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (let i = 0; i < 8; i++) rawPassword += chars.charAt(Math.floor(Math.random() * chars.length));
 
     const user = new User({ name, email: email.toLowerCase(), passwordHash: rawPassword, role: userRole });
     await user.save(); // automatically hashed by pre-save hook
@@ -34,7 +38,7 @@ const createUser = async (req, res) => {
     await sendCredentials(user.email, user.name, rawPassword);
 
     res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role });
-  } catch (err) { res.status(500).json({error: err.message}) }
+  } catch (err) { res.status(500).json({ error: err.message }) }
 };
 
 const updateRole = async (req, res) => {
@@ -46,14 +50,14 @@ const updateRole = async (req, res) => {
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
-    
+
     // Prevent changing admin to another role (admin is protected)
     if (user.role === "admin") return res.status(403).json({ error: "Cannot modify admin user role" });
-    
+
     user.role = role;
     await user.save();
     res.json({ id: user._id, name: user.name, email: user.email, role: user.role });
-  } catch(err) { res.status(500).json({error: err.message}) }
+  } catch (err) { res.status(500).json({ error: err.message }) }
 };
 
 const changePassword = async (req, res) => {
@@ -69,7 +73,7 @@ const changePassword = async (req, res) => {
 
     if (newPassword.length < 6) return res.status(400).json({ error: "New password must be at least 6 characters" });
 
-    user.passwordHash = newPassword; 
+    user.passwordHash = newPassword;
     await user.save(); // Model's pre-save hook handles hashing
 
     res.json({ message: "Password updated successfully" });
@@ -81,7 +85,20 @@ const remove = async (req, res) => {
     const deleted = await User.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ error: "User not found" });
     res.json({ message: "User deleted" });
-  } catch(err) { res.status(500).json({error: err.message}) }
+  } catch (err) { res.status(500).json({ error: err.message }) }
 };
 
-module.exports = { getAll, createUser, updateRole, remove, changePassword };
+// Agent toggles their own Online / Offline status
+const toggleAvailability = async (req, res) => {
+  try {
+    const agent = await User.findById(req.user.id);
+    if (!agent) return res.status(404).json({ error: "User not found" });
+    if (agent.role !== "agent") return res.status(400).json({ error: "Only agents can toggle availability" });
+
+    agent.isAvailable = !agent.isAvailable;
+    await agent.save();
+    res.json({ id: agent._id, name: agent.name, role: agent.role, isAvailable: agent.isAvailable });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+module.exports = { getAll, createUser, updateRole, remove, changePassword, toggleAvailability };
