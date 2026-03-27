@@ -19,6 +19,10 @@ const TicketDetail = () => {
   const [showAudit, setShowAudit] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    fetchOne(id);
+  }, [id, fetchOne]);
+
   if (loading || !ticket) return (
     <div className="p-12 flex justify-center">
       <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />

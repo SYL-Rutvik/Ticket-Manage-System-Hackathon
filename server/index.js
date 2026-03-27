@@ -13,6 +13,27 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  console.log(`📨 ${req.method} ${req.path}`);
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const icon = duration > 1000 ? '⏱️' : '✅';
+    console.log(`${icon} ${req.method} ${req.path} - ${duration}ms (${res.statusCode})`);
+  });
+  next();
+});
+
+// Global request timeout (10 seconds)
+app.use((req, res, next) => {
+  req.setTimeout(10000, () => {
+    console.error(`⏳ Timeout on ${req.method} ${req.path}`);
+    res.status(504).json({ error: 'Request timeout' });
+  });
+  next();
+});
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api/auth",    require("./routes/authRoutes"));
 app.use("/api/tickets", require("./routes/ticketRoutes"));
