@@ -34,13 +34,15 @@ const CustomerManagement = () => {
         area: formData.area
       }
     };
-
-    const success = await addUser(payload);
-    if (!success) {
-      // Show actual error from controller if available
-      setFormError('Failed to create account.');
+    
+    const result = await addUser(payload);
+    if (!result?.ok) {
+      setFormError(result?.error || 'Failed to create employee. Email may already be registered.');
     } else {
-
+      if (!result.emailSent) {
+        setFormError(`${result.warning || 'Employee created but email failed.'}${result.tempPassword ? ` Temporary password: ${result.tempPassword}` : ''}`);
+        return;
+      }
       setIsModalOpen(false);
       setFormData({ name: '', email: '', role: 'employee', city: '', state: '', area: '' });
     }

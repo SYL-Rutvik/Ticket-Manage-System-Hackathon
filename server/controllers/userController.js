@@ -56,11 +56,26 @@ const createUser = async (req, res) => {
     });
     await user.save(); // automatically hashed by pre-save hook
 
-    // Dispatch email (non-blocking to prevent UI timeout)
-    sendCredentials(user.email, user.name, rawPassword).catch(err => console.error("Background email failed for: ", user.email, err));
+    // Dispatch email and return status so admin can take action if SMTP fails
+    const emailSent = await sendCredentials(user.email, user.name, rawPassword);
 
-    res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role, location: user.location });
+    const response = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      location: user.location,
+      emailSent,
+    };
 
+    if (!emailSent) {
+      response.warning = 'User was created, but email could not be sent from this machine.';
+      if (process.env.NODE_ENV !== 'production') {
+        response.tempPassword = rawPassword;
+      }
+    }
+
+    res.status(201).json(response);
   } catch (err) { res.status(500).json({ error: err.message }) }
 };
 

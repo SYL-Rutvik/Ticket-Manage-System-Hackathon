@@ -23,11 +23,20 @@ export const useAdminController = () => {
     setLoading(true);
     try {
       const d = await createUser(userData);
-      setUsers(prev => [...prev, d]);
-      return true;
+      const userRecord = {
+        id: d.id,
+        name: d.name,
+        email: d.email,
+        role: d.role,
+        createdAt: d.createdAt,
+        isAvailable: d.isAvailable,
+        location: d.location,
+      };
+      setUsers(prev => [...prev, userRecord]);
+      return { ok: true, emailSent: d.emailSent !== false, warning: d.warning, tempPassword: d.tempPassword };
     } catch (e) { 
       setError(e.message);
-      return false; 
+      return { ok: false, error: e.message }; 
     } finally {
       setLoading(false);
     }
