@@ -2,6 +2,21 @@ const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const { sendCredentials } = require("../utils/emailService");
 
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-passwordHash");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isAvailable: user.isAvailable,
+      createdAt: user.createdAt,
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
 const getAll = async (req, res) => {
   try {
     const users = await User.find().select("-passwordHash");
@@ -101,4 +116,4 @@ const toggleAvailability = async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
-module.exports = { getAll, createUser, updateRole, remove, changePassword, toggleAvailability };
+module.exports = { getAll, getMe, createUser, updateRole, remove, changePassword, toggleAvailability };

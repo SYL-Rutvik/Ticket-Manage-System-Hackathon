@@ -82,6 +82,7 @@ function App() {
             <Route path="queue" element={<TicketQueue />} />
             <Route path="assigned" element={<MyAssigned />} />
             <Route path="tickets/:id" element={<TicketDetailAgent />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
 
           {/* Admin Routes */}
@@ -93,6 +94,7 @@ function App() {
             <Route path="customers" element={<CustomerManagement />} />
             <Route path="agents" element={<AgentManagement />} />
             <Route path="sla" element={<SLAConfig />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
 
           {/* Fallback */}

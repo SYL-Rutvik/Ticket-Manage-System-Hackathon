@@ -4,6 +4,7 @@ const { requireRole } = require("../middleware/roleMiddleware");
 const ctrl = require("../controllers/userController");
 
 router.get("/", auth, requireRole("admin"), ctrl.getAll);
+router.get("/me", auth, ctrl.getMe);
 router.post("/", auth, requireRole("admin"), ctrl.createUser);
 router.patch("/:id/role", auth, requireRole("admin"), ctrl.updateRole);
 router.delete("/:id", auth, requireRole("admin"), ctrl.remove);

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/shared/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, PlusCircle, Inbox, Users as UsersIcon, LayoutDashboard, UserCog, Clock, LogOut, Menu, X, BookOpen, Settings, ShieldCog } from 'lucide-react';
+import { Ticket, PlusCircle, Inbox, Users as UsersIcon, LayoutDashboard, Clock, LogOut, Menu, X, BookOpen, Settings, ShieldCog, Wifi, WifiOff } from 'lucide-react';
+import { request } from '@/services/shared/api';
 
 const navConfig = {
   employee: [
@@ -51,6 +52,27 @@ const Sidebar = () => {
     else document.body.style.overflow = 'unset';
     return () => { document.body.style.overflow = 'unset'; }
   }, [isOpen]);
+
+  // Load persisted and server availability for agents on mount
+  useEffect(() => {
+    if (user?.role !== 'agent') return;
+
+    const cached = sessionStorage.getItem('agentIsOnline');
+    if (cached !== null) setIsOnline(cached === 'true');
+
+    const loadAvailability = async () => {
+      try {
+        const me = await request('/users/me');
+        const status = Boolean(me.isAvailable);
+        setIsOnline(status);
+        sessionStorage.setItem('agentIsOnline', String(status));
+      } catch {
+        // keep cached value when network call fails
+      }
+    };
+
+    loadAvailability();
+  }, [user?.role]);
 
   // Toggle Online ↔ Offline and persist to server
   const handleToggleOnline = async () => {
@@ -163,7 +185,7 @@ const Sidebar = () => {
         <div className="pt-6 mt-6 border-t border-border/50">
           <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest px-3 mb-4">Options</p>
           <NavLink
-            to="/employee/profile"
+            to={user?.role === 'admin' ? '/admin/profile' : user?.role === 'agent' ? '/agent/profile' : '/employee/profile'}
             className={({ isActive }) =>
               `w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 text-left ${isActive
                 ? 'bg-primary/20 text-primary-light border-l-4 border-primary'
