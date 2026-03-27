@@ -19,10 +19,14 @@ const AgentManagement = () => {
   const handleCreateAgent = async (e) => {
     e.preventDefault();
     setFormError('');
-    const success = await addUser({ ...formData, role: 'agent' });
-    if (!success) {
-      setFormError('Failed to create agent. Email may already be registered.');
+    const result = await addUser({ ...formData, role: 'agent' });
+    if (!result?.ok) {
+      setFormError(result?.error || 'Failed to create agent. Email may already be registered.');
     } else {
+      if (!result.emailSent) {
+        setFormError(`${result.warning || 'Agent created but email failed.'}${result.tempPassword ? ` Temporary password: ${result.tempPassword}` : ''}`);
+        return;
+      }
       setIsModalOpen(false);
       setFormData({ name: '', email: '', role: 'agent' });
     }
