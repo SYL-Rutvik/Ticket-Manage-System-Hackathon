@@ -16,10 +16,12 @@ This is the most efficient configuration for a hackathon. Follow these exact ste
     *   **Root Directory**: `server`
     *   **Runtime**: `Node`
     *   **Build Command**: `npm install`
-    *   **Start Command**: `node server.js`
+    *   **Start Command**: `node index.js`
 5.  **Environment Variables**: Click "Advanced" > "Add Environment Variable":
     *   `MONGO_URI`: (Your MongoDB Atlas connection string)
     *   `JWT_SECRET`: (Any long random string)
+    *   `FRONTEND_URL`: (Your Vercel URL - example: `https://ticket-flow.vercel.app`)
+    *   `PORT`: `5000` (Render allocates its own, but good to have)
     *   `SMTP_USER`: `ticketfflow@gmail.com`
     *   `SMTP_PASS`: (Your 16-character App Password)
     *   `SMTP_SERVICE`: `gmail`
@@ -45,20 +47,19 @@ This is the most efficient configuration for a hackathon. Follow these exact ste
 
 ---
 
-## � Phase 3: The "CORS" Critical Fix
+## 🛡️ Phase 3: CORS Configuration (Handled Automatically)
 
-For security, the backend needs to know that your new Vercel URL is allowed to talk to it.
+The backend in `server/index.js` already supports dynamic CORS via the `FRONTEND_URL` environment variable:
 
-1.  Open `server/server.js` (or `app.js`).
-2.  Find the `cors()` middleware.
-3.  Update it to include your Vercel URL:
 ```javascript
 app.use(cors({
-  origin: ["http://localhost:5173", "https://your-frontend-name.vercel.app"],
+  origin: process.env.FRONTEND_URL || true,
   credentials: true
 }));
 ```
-4.  **Commit & Push** this change to GitHub. Render will automatically redeploy the backend with the fix.
+
+Make sure you have added `FRONTEND_URL` to your Render environment variables!
+
 
 ---
 
